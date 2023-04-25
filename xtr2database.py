@@ -8,6 +8,7 @@ from itertools import groupby
 from pathlib import Path
 
 import psycopg
+from psycopg import ClientCursor
 from psycopg.rows import dict_row
 from tqdm import tqdm
 
@@ -111,15 +112,16 @@ def insert_into_database(cur, data, station_fullname, length):
         )
 
         # On colle tout ensemble
-        row = cur.mogrify( # FIXME pas coté client
+        row = cur.mogrify(
             "(%s,%s,%s,%s,%s)",
-            data["date"][i], station_id, constellation_id, observation_id, data["value"][i]
+            (data["date"][i], station_id, constellation_id, observation_id, data["value"][i])
         )
         to_insert.append(row)
 
+    # On envoie dans la base de données
     cur.execute(
-        b"insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " + \
-        b",".join(to_insert)
+        "insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " + \
+        ",".join(to_insert)
     )
 
 
@@ -144,7 +146,10 @@ if __name__ == "__main__":
         break
 
     print("Insertion des données...")
-    with psycopg.connect("dbname=quality_check_data user=m1m", row_factory=dict_row) as conn:
+    with psycopg.connect(
+        "dbname=quality_check_data user=m1m",
+        row_factory=dict_row, cursor_factory=ClientCursor
+    ) as conn:
         with conn.cursor() as cur:
             for data, station_fullname, length in tqdm(extracted):
                 insert_into_database(cur, data, station_fullname, length)
