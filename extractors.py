@@ -15,7 +15,7 @@ def get_file_date(filename):
 
 def get_station_id(file):
     """
-    Renvoie l'identifaint d'une station en fonction de son nom de fichier.
+    Renvoie l'identifiant d'une station en fonction de son nom de fichier.
     """
     return file.stem.split("-", 1)[0]
 
