@@ -73,6 +73,10 @@ def get_station_data(files):
 
 
 def fetch_or_create(cur, key, fetch_query, *insert_args):
+    """
+    Récupère l'ID d'un objet à partir de la base de données ou crée un nouvel objet
+    avec l'ID spécifié si aucun n'existe dans la base de données.
+    """
     # Si l'id a déjà été recupéré, on le prend du cache
     cached = _database_fetch_cache.get(key)
     if cached:
@@ -92,6 +96,9 @@ def fetch_or_create(cur, key, fetch_query, *insert_args):
 
 
 def insert_into_database(cur, data, station_fullname, length):
+    """
+    Insère toute les données d'une station dans la base de données.
+    """
     station_id = fetch_or_create(
         cur, station_fullname,
         "select id from station where fullname = %s;",
@@ -154,11 +161,9 @@ if __name__ == "__main__":
         data, length = get_station_data(files)
         extracted.append((data, station_fullname, length))
 
-        break
-
     print("Insertion des données...")
     with psycopg.connect(
-        "dbname=quality_check_data user=m1m",
+        "dbname=quality_check_data user=m1m", # temporaire
         row_factory=dict_row, cursor_factory=ClientCursor
     ) as conn:
         with conn.cursor() as cur:
