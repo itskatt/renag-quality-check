@@ -20,6 +20,9 @@ HERE = Path(__file__).parent
 INFILES = HERE / ".." / "graphes simples" / "data_2023"
 
 
+_database_fetch_cache = {}
+
+
 def get_station_data(files):
     """
     Extrait les données d'une station et les met en forme pour l'insertion dans
@@ -70,14 +73,22 @@ def get_station_data(files):
 
 
 def fetch_or_create(cur, key, fetch_query, *insert_args):
+    # Si l'id a déjà été recupéré, on le prend du cache
+    cached = _database_fetch_cache.get(key)
+    if not cached:
+        return cached
+
     cur.execute(fetch_query, (key,))
     res = cur.fetchone()
 
     if not res:
         cur.execute(*insert_args)
-        return cur.fetchone()["id"]
+        obj_id = cur.fetchone()["id"]
     else:
-        return res["id"]
+        obj_id = res["id"]
+
+    _database_fetch_cache[key] = obj_id
+    return obj_id
 
 
 def insert_into_database(cur, data, station_fullname, length):
