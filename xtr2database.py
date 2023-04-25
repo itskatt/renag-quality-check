@@ -68,7 +68,7 @@ def get_station_data(files):
     return data, length
 
 
-def get_or_create(cur, key, fetch_query, *insert_args):
+def fetch_or_create(cur, key, fetch_query, *insert_args):
     cur.execute(fetch_query, (key,))
     res = cur.fetchone()
 
@@ -80,36 +80,47 @@ def get_or_create(cur, key, fetch_query, *insert_args):
 
 
 def insert_into_database(cur, data, station_fullname, length):
-    # Récupération de l'id de la station et insertion si pas présente
-    cur.execute("select id from station where fullname = %s;", (station_fullname,))
-    res = cur.fetchone()
+    station_id = fetch_or_create(
+        cur, station_fullname,
+        "select id from station where fullname = %s;",
 
-    if not res:
-        cur.execute(
-            "insert into station (shortname, fullname) values (%s , %s) returning id;",
-            (station_fullname[:4], station_fullname)
-        )
-        station_id = cur.fetchone()["id"]
-    else:
-        station_id = res["id"]
+        "insert into station (shortname, fullname) values (%s , %s) returning id;",
+        (station_fullname[:4], station_fullname)
+    )
 
+    to_insert = []
     for i in range(length):
         # Constellation
-        constel_shortname = data["constellation"][i]
-        cur.execute("select id from constellation where shortname = %s;", (constel_shortname,))
-        res = cur.fetchone()
+        constellation_shortname = data["constellation"][i]
+        constellation_id = fetch_or_create(
+            cur, constellation_shortname,
+            "select id from constellation where shortname = %s;",
 
-        if not res:
-            cur.execute(
-                "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
-                ("??", constel_shortname)
-            )
-            constel_id = cur.fetchone["id"]
-        else:
-            constel_id = res["id"]
+            "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
+            ("??", constellation_shortname)
+        )
 
         # Observation
-        obs_type = data["observation_type"][i]
+        observation_type = data["observation_type"][i]
+        observation_id = fetch_or_create(
+            cur, observation_type,
+            "select id from observation_type where type = %s;",
+
+            "insert into observation_type (type) values (%s) returning id;",
+            (observation_type,)
+        )
+
+        # On colle tout ensemble
+        row = cur.mogrify( # FIXME pas coté client
+            "(%s,%s,%s,%s,%s)",
+            data["date"][i], station_id, constellation_id, observation_id, data["value"][i]
+        )
+        to_insert.append(row)
+
+    cur.execute(
+        b"insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " + \
+        b",".join(to_insert)
+    )
 
 
 if __name__ == "__main__":
