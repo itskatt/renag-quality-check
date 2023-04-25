@@ -10,7 +10,7 @@ def get_file_date(filename):
     """
     date_ = filename.split("-", 1)[1]
     parsed = datetime.strptime(date_, "%Y-%m-%d")
-    return parsed
+    return parsed.date()
 
 
 def get_station_id(file):

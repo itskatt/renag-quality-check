@@ -4,6 +4,9 @@ Script principal.
 
 Parse les fichiers XTR et insère les résultats dans une base de données.
 """
+import argparse
+import sys
+from functools import partial
 from itertools import groupby
 from pathlib import Path
 
@@ -19,6 +22,12 @@ HERE = Path(__file__).parent
 # Temporaire
 INFILES = HERE / ".." / "graphes simples" / "data_2023"
 
+db_connection = partial(
+    psycopg.connect,
+    "dbname=quality_check_data user=m1m", # temporaire
+    row_factory=dict_row,
+    cursor_factory=ClientCursor
+)
 
 _database_fetch_cache = {}
 
@@ -62,7 +71,7 @@ def get_station_data(files):
             if band_value == 0:
                 continue  # grafana gère bien les trous
 
-            data["date"].append(dates[i].date())
+            data["date"].append(dates[i])
             data["constellation"].append(band[:3]) # shortname
             data["observation_type"].append(band[3:])
             data["value"].append(band_value)
@@ -142,22 +151,55 @@ def insert_into_database(cur, data, station_fullname, length):
         ",".join(to_insert)
     )
 
-def get_all_files():
+
+def get_all_files(after):
     """
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
+    On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
     """
-    flattened = []
-    for dire in INFILES.iterdir():
-        for file in dire.iterdir():
-            flattened.append(file)
+    flattened = [f for f in INFILES.rglob("*.xtr") if get_file_date(f.stem) > after]
 
     flattened.sort(key=get_station_id)
 
     return flattened
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-o", "--override",
+        help="Ecrase toute les données de la table de serie temporelle",
+        action="store_true"
+    )
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    all_files = get_all_files()
+    args = get_args()
+
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+
+            if args.override:
+                print("La serie temporelle précédente va être écrasée.")
+                cur.execute("delete from sig2noise;")
+                latest_date = None
+
+            else:
+                cur.execute("""--sql
+                    select distinct date
+                    from sig2noise
+                    order by date desc
+                    limit 1;
+                """)
+                latest_date = cur.fetchone()["date"]
+                print("Traitement des fichiers produits après le", latest_date)
+
+    all_files = get_all_files(latest_date)
+
+    print(len(all_files), "fichiers vont être traitées.")
 
     # groupement des fichiers par station
     stations = []
@@ -171,10 +213,7 @@ if __name__ == "__main__":
         extracted.append((data, station_fullname, length))
 
     print("Insertion des données...")
-    with psycopg.connect(
-        "dbname=quality_check_data user=m1m", # temporaire
-        row_factory=dict_row, cursor_factory=ClientCursor
-    ) as conn:
+    with db_connection() as conn:
         with conn.cursor() as cur:
             for data, station_fullname, length in tqdm(extracted):
                 insert_into_database(cur, data, station_fullname, length)
