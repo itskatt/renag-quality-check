@@ -75,7 +75,7 @@ def get_station_data(files):
 def fetch_or_create(cur, key, fetch_query, *insert_args):
     # Si l'id a déjà été recupéré, on le prend du cache
     cached = _database_fetch_cache.get(key)
-    if not cached:
+    if cached:
         return cached
 
     cur.execute(fetch_query, (key,))
