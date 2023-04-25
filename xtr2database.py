@@ -142,8 +142,10 @@ def insert_into_database(cur, data, station_fullname, length):
         ",".join(to_insert)
     )
 
-
-if __name__ == "__main__":
+def get_all_files():
+    """
+    Renvoie la liste de tout les fichiers qui doivent êtres traités.
+    """
     flattened = []
     for dire in INFILES.iterdir():
         for file in dire.iterdir():
@@ -151,8 +153,15 @@ if __name__ == "__main__":
 
     flattened.sort(key=get_station_id)
 
+    return flattened
+
+
+if __name__ == "__main__":
+    all_files = get_all_files()
+
+    # groupement des fichiers par station
     stations = []
-    for key, group in groupby(flattened, get_station_id):
+    for key, group in groupby(all_files, get_station_id):
         stations.append((key, list(group)))
 
     print("Extraction des données...")
