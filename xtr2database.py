@@ -24,7 +24,8 @@ INFILES = HERE / ".." / "graphes simples" / "data_2023"
 
 db_connection = partial(
     psycopg.connect,
-    "dbname=quality_check_data user=m1m", # temporaire
+    dbname="quality_check_data",
+    user="m1m",
     row_factory=dict_row,
     cursor_factory=ClientCursor
 )
@@ -195,11 +196,15 @@ if __name__ == "__main__":
                     limit 1;
                 """)
                 latest_date = cur.fetchone()["date"]
-                print("Traitement des fichiers produits après le", latest_date)
+                print("Traitement des fichiers produits après le", latest_date, ".")
 
     all_files = get_all_files(latest_date)
 
-    print(len(all_files), "fichiers vont être traitées.")
+    nb_files = len(all_files)
+    print(nb_files, "fichiers vont être traitées.")
+
+    if nb_files == 0:
+        sys.exit()
 
     # groupement des fichiers par station
     stations = []
