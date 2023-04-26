@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Script principal.
 =================
@@ -73,7 +74,7 @@ def get_station_data(files):
                 continue  # grafana gère bien les trous
 
             data["date"].append(dates[i])
-            data["constellation"].append(band[:3]) # shortname
+            data["constellation"].append(band[:3])  # shortname
             data["observation_type"].append(band[3:])
             data["value"].append(band_value)
 
@@ -148,17 +149,17 @@ def insert_into_database(cur, data, station_fullname, length):
 
     # On envoie dans la base de données
     cur.execute(
-        "insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " + \
+        "insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " +
         ",".join(to_insert)
     )
 
 
-def get_all_files(after):
+def get_all_files(after=None):
     """
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
     On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
     """
-    flattened = [f for f in INFILES.rglob("*.xtr") if get_file_date(f.stem) > after]
+    flattened = [f for f in INFILES.rglob("*.xtr") if after and get_file_date(f.stem) > after]
 
     flattened.sort(key=get_station_id)
 
