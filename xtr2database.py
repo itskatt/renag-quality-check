@@ -10,6 +10,7 @@ import sys
 from functools import partial
 from itertools import groupby
 from pathlib import Path
+from datetime import date
 
 import psycopg
 from psycopg import ClientCursor
@@ -159,7 +160,10 @@ def get_all_files(after=None):
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
     On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
     """
-    flattened = [f for f in INFILES.rglob("*.xtr") if after and get_file_date(f.stem) > after]
+    if not after:
+        after = date.fromtimestamp(0)
+
+    flattened = [f for f in INFILES.rglob("*.xtr") if get_file_date(f.stem) > after]
 
     flattened.sort(key=get_station_id)
 
@@ -196,8 +200,14 @@ if __name__ == "__main__":
                     order by date desc
                     limit 1;
                 """)
-                latest_date = cur.fetchone()["date"]
-                print("Traitement des fichiers produits après le", latest_date, ".")
+                res = cur.fetchone()
+
+                if res:
+                    latest_date = res["date"]
+                    print("Traitement des fichiers produits après le", latest_date, ".")
+                else:
+                    print("La base de données semble vide, nous allons tout envoyer.")
+                    latest_date = None
 
     all_files = get_all_files(latest_date)
 
