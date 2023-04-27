@@ -7,107 +7,70 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 """
 import argparse
 import sys
-from functools import partial
+from datetime import date
 from itertools import groupby
 from pathlib import Path
-from datetime import date
 
-import psycopg
-from psycopg import ClientCursor
-from psycopg.rows import dict_row
 from tqdm import tqdm
 
-from extractors import extract_sig2noise, get_file_date, get_station_id
+from database import db_connection, fetch_or_create
+from extractors import get_file_date, get_station_id
+from metrics import sig2noise
 
 HERE = Path(__file__).parent
 
 # TODO: changer
 INFILES = HERE / ".." /".." / "graphes simples" / "data_2023"
 
-db_connection = partial(
-    psycopg.connect,
-    dbname="quality_check_data",
-    user="m1m", # TODO: changer
-    row_factory=dict_row,
-    cursor_factory=ClientCursor
-)
-
-_database_fetch_cache = {}
-
 
 def get_station_data(files):
     """
     Extrait les données d'une station et les met en forme pour l'insertion dans
     une bdd de type relationelle.
+
+    Les données extraites :
+        - Sig2Noise
+        - Multipath
     """
-    dates = []
-    band_data = []
-    all_bands = set()
+    station_data = []
+
+    sig2noise_data = {
+        "type": "sig2noise",
+        "length": 0,
+        "data": {
+            "date": [],
+            # la sation est rajoutée lors de l'insertion
+            "constellation": [],
+            "observation_type": [],
+            "value": []
+        }
+    }
 
     # Extraction des informations des fichiers
     for file in files:
-        dates.append(get_file_date(file.stem))
+        current_date = get_file_date(file.stem)
 
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
                 if line.startswith("#====== Signal to noise ratio"):
-                    sig2noise_data = extract_sig2noise(f)
-                    band_data.append(sig2noise_data)
+                    sig2noise_extracted = sig2noise.extract(f)
 
-                    for band in sig2noise_data.keys():
-                        all_bands.add(band)
+                    data = sig2noise_data["data"]
+                    for band, value in sig2noise_extracted.items():
+                        sig2noise_data["length"] += 1
+
+                        data["date"].append(current_date)
+                        data["constellation"].append(band[:3])  # shortname
+                        data["observation_type"].append(band[-2:]) # 2 derniers caractères
+                        data["value"].append(value)
 
                     break
 
-    # Conversion dans un format tabulaire
-    data = {
-        "date": [],
-        # la sation est rajoutéé lors de l'insertion
-        "constellation": [],
-        "observation_type": [],
-        "value": []
-    }
-
-    length = 0
-    for band in all_bands:
-        for i, band_value in enumerate(d.get(band, 0) for d in band_data):
-            if band_value == 0:
-                continue  # grafana gère bien les trous
-
-            data["date"].append(dates[i])
-            data["constellation"].append(band[:3])  # shortname
-            data["observation_type"].append(band[-2:]) # 2 derniers caractères
-            data["value"].append(band_value)
-
-            length += 1
-
-    return data, length
+    station_data.append(sig2noise_data)
+    return station_data
 
 
-def fetch_or_create(cur, key, fetch_query, *insert_args):
-    """
-    Récupère l'ID d'un objet à partir de la base de données ou crée un nouvel objet
-    avec l'ID spécifié si aucun n'existe dans la base de données.
-    """
-    # Si l'id a déjà été recupéré, on le prend du cache
-    cached = _database_fetch_cache.get(key)
-    if cached:
-        return cached
-
-    cur.execute(fetch_query, (key,))
-    res = cur.fetchone()
-
-    if not res:
-        cur.execute(*insert_args)
-        obj_id = cur.fetchone()["id"]
-    else:
-        obj_id = res["id"]
-
-    _database_fetch_cache[key] = obj_id
-    return obj_id
-
-
-def insert_into_database(cur, data, station_fullname, length):
+def insert_into_database(cur, data, station_fullname):
     """
     Insère toute les données d'une station dans la base de données.
     """
@@ -119,40 +82,9 @@ def insert_into_database(cur, data, station_fullname, length):
         (station_fullname[:4], station_fullname)
     )
 
-    to_insert = []
-    for i in range(length):
-        # Constellation
-        constellation_shortname = data["constellation"][i]
-        constellation_id = fetch_or_create(
-            cur, constellation_shortname,
-            "select id from constellation where shortname = %s;",
-
-            "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
-            ("??", constellation_shortname)
-        )
-
-        # Observation
-        observation_type = data["observation_type"][i]
-        observation_id = fetch_or_create(
-            cur, observation_type,
-            "select id from observation_type where type = %s;",
-
-            "insert into observation_type (type) values (%s) returning id;",
-            (observation_type,)
-        )
-
-        # On colle tout ensemble
-        row = cur.mogrify(
-            "(%s,%s,%s,%s,%s)",
-            (data["date"][i], station_id, constellation_id, observation_id, data["value"][i])
-        )
-        to_insert.append(row)
-
-    # On envoie dans la base de données
-    cur.execute(
-        "insert into sig2noise(date, station_id, constellation_id, observation_type_id, value) values " +
-        ",".join(to_insert)
-    )
+    for metric in data:
+        if metric["type"] == "sig2noise":
+            sig2noise.insert(cur, station_id, metric)
 
 
 def get_all_files(after=None):
@@ -225,13 +157,13 @@ if __name__ == "__main__":
     print("Extraction des données...")
     extracted = []
     for station_fullname, files in tqdm(stations):
-        data, length = get_station_data(files)
-        extracted.append((data, station_fullname, length))
+        station_data = get_station_data(files)
+        extracted.append((station_data, station_fullname))
 
     print("Insertion des données...")
     with db_connection() as conn:
         with conn.cursor() as cur:
-            for data, station_fullname, length in tqdm(extracted):
-                insert_into_database(cur, data, station_fullname, length)
+            for station_data, station_fullname in tqdm(extracted):
+                insert_into_database(cur, station_data, station_fullname)
 
     print("OK !")

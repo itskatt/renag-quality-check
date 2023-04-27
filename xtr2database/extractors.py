@@ -20,28 +20,3 @@ def get_station_id(file):
     return file.stem.split("-", 1)[0]
 
 
-def extract_sig2noise(f):
-    """
-    Extrait le sig2noise moyen d'un fichier xtr
-    """
-    next(f)  # entête de section
-    next(f)  # entête des moyennes
-
-    out = {}
-
-    line: str = next(f)
-    while line.startswith("="):
-        splitted = line.split()
-
-        band = splitted[0][1:]  # "GPSS1C" par ex
-        try:
-            mean = float(splitted[3])
-        except ValueError:
-            mean = 0.0
-
-        out[band] = mean
-
-        line = next(f)
-
-    return out
-
