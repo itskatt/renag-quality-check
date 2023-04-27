@@ -6,8 +6,8 @@ Script principal.
 Parse les fichiers XTR et insère les résultats dans une base de données.
 """
 import argparse
-import sys
 import os
+import sys
 from datetime import date
 from itertools import groupby
 from pathlib import Path
@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from .database import db_connection, fetch_or_create
 from .extractors import get_file_date, get_station_id
-from .metrics import sig2noise
+from .metrics import extract_from_header_into, create_metric_dest, insert_header_section_metric
 
 
 def get_station_data(files):
@@ -28,19 +28,10 @@ def get_station_data(files):
         - Sig2Noise
         - Multipath
     """
-    station_data = []
+    sig2noise_data = create_metric_dest("sig2noise")
+    multipath_data = create_metric_dest("multipath")
 
-    sig2noise_data = {
-        "type": "sig2noise",
-        "length": 0,
-        "data": {
-            "date": [],
-            # la sation est rajoutée lors de l'insertion
-            "constellation": [],
-            "observation_type": [],
-            "value": []
-        }
-    }
+    extracted_metrics = 0
 
     # Extraction des informations des fichiers
     for file in files:
@@ -48,13 +39,21 @@ def get_station_data(files):
 
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
-                if line.startswith("#====== Signal to noise ratio"):
-                    sig2noise.extract_into(f, sig2noise_data, current_date)
+                if extracted_metrics == 2:
+                    break # On arrête de lire le fichier une fois qu'on a tout ce qu'il nous faut
 
-                    break
+                elif line.startswith("#====== Signal to noise ratio"):
+                    extract_from_header_into(f, sig2noise_data, current_date)
+                    extracted_metrics += 1
 
-    station_data.append(sig2noise_data)
-    return station_data
+                elif line.startswith("#====== Code multipath"):
+                    extract_from_header_into(f, multipath_data, current_date)
+                    extracted_metrics += 1
+
+    return [
+        sig2noise_data,
+        multipath_data
+    ]
 
 
 def insert_into_database(cur, data, station_fullname):
@@ -70,8 +69,7 @@ def insert_into_database(cur, data, station_fullname):
     )
 
     for metric in data:
-        if metric["type"] == "sig2noise":
-            sig2noise.insert(cur, station_id, metric)
+        insert_header_section_metric(cur, station_id, metric)
 
 
 def get_all_files(after=None):
@@ -124,7 +122,7 @@ def main():
                 res = cur.fetchone()
 
                 if res:
-                    latest_date = res["date"]
+                    latest_date = res["date"] # type: ignore
                     print("Traitement des fichiers produits après le", latest_date, ".")
                 else:
                     print("La base de données semble vide, nous allons tout envoyer.")

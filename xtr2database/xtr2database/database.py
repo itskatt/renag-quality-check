@@ -11,7 +11,7 @@ db_connection = partial(
     user="m1m", # TODO: changer
     row_factory=dict_row,
     cursor_factory=ClientCursor
-)
+) # type: ignore
 
 _database_fetch_cache = {}
 
