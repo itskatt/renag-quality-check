@@ -21,16 +21,26 @@ create table station (
 );
 
 create table station_network (
-    station_id smallserial constraint station_network_station_id_fk references station,
-    network_id smallserial constraint station_network_network_id_fk references network,
+    station_id smallserial
+        constraint station_network_station_id_fk references station
+        on delete cascade,
+    network_id smallserial
+        constraint station_network_network_id_fk references network
+        on delete cascade,
     constraint station_network_pk primary key (station_id, network_id)
 );
 
 create table sig2noise (
     id bigserial constraint snr_pk primary key,
     date date not null,
-    station_id smallserial constraint snr_station_id_fk references station,
-    constellation_id smallserial constraint snr_constellation_id_fk references constellation,
-    observation_type_id smallserial constraint snr_observation_type_id_fk references observation_type,
-    value real
+    station_id smallserial
+        constraint snr_station_id_fk references station
+        on delete cascade,
+    constellation_id smallserial
+        constraint snr_constellation_id_fk references constellation
+        on delete cascade,
+    observation_type_id smallserial
+        constraint snr_observation_type_id_fk references observation_type
+        on delete cascade,
+    value real not null
 );
