@@ -40,10 +40,6 @@ def get_station_data(files):
     Extrait les données d'une station et les met en forme pour l'insertion dans
     une bdd de type relationelle.
     """
-    extractors = {
-        "Signal to noise ratio": 1
-    }
-
     dates = []
     band_data = []
     all_bands = set()
@@ -55,10 +51,10 @@ def get_station_data(files):
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
                 if line.startswith("#====== Signal to noise ratio"):
-                    data = extract_sig2noise(f)
-                    band_data.append(data)
+                    sig2noise_data = extract_sig2noise(f)
+                    band_data.append(sig2noise_data)
 
-                    for band in data.keys():
+                    for band in sig2noise_data.keys():
                         all_bands.add(band)
 
                     break
@@ -80,7 +76,7 @@ def get_station_data(files):
 
             data["date"].append(dates[i])
             data["constellation"].append(band[:3])  # shortname
-            data["observation_type"].append(band[3:])
+            data["observation_type"].append(band[2:]) # 2 derniers caractères
             data["value"].append(band_value)
 
             length += 1

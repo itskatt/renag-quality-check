@@ -44,3 +44,4 @@ create table sig2noise (
         on delete cascade,
     value real not null
 );
+
