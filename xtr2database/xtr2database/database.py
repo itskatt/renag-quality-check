@@ -38,3 +38,22 @@ def fetch_or_create(cur, key, fetch_query, *insert_args):
     _database_fetch_cache[key] = obj_id
     return obj_id
 
+
+def get_constellation_id(cur, constellation_shortname):
+    return fetch_or_create(
+        cur, constellation_shortname,
+        "select id from constellation where shortname = %s;",
+
+        "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
+        ("??", constellation_shortname)
+    )
+
+
+def get_observation_id(cur, observation_type):
+    return fetch_or_create(
+        cur, observation_type,
+        "select id from observation_type where type = %s;",
+
+        "insert into observation_type (type) values (%s) returning id;",
+        (observation_type,)
+    )

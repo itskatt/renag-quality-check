@@ -1,12 +1,15 @@
-from ..database import fetch_or_create
+from ..database import get_constellation_id, get_observation_id
 
 def extract_into(f, dest, current_date):
     """
-    Extrait le sig2noise moyen d'un fichier xtr
+    Extrait le sig2noise moyen d'un fichier xtr et le formatte
+    dans un format tabulaire, prêt pour une insertion dans une
+    base de données.
     """
     next(f)  # entête de section
     next(f)  # entête des moyennes
 
+    # Extraction
     extracted = []
 
     line: str = next(f)
@@ -35,28 +38,17 @@ def extract_into(f, dest, current_date):
 
 
 def insert(cur, station_id, sig2noise_data):
+    """
+    Insère le sig2noise dans la base de données.
+    """
     to_insert = []
     data = sig2noise_data["data"]
     for i in range(sig2noise_data["length"]):
         # Constellation
-        constellation_shortname = data["constellation"][i]
-        constellation_id = fetch_or_create(
-            cur, constellation_shortname,
-            "select id from constellation where shortname = %s;",
+        constellation_id = get_constellation_id(data["constellation"][i])
 
-            "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
-            ("??", constellation_shortname)
-        )
-
-        # Observation
-        observation_type = data["observation_type"][i]
-        observation_id = fetch_or_create(
-            cur, observation_type,
-            "select id from observation_type where type = %s;",
-
-            "insert into observation_type (type) values (%s) returning id;",
-            (observation_type,)
-        )
+        # Observation type
+        observation_id = get_observation_id(data["observation_type"][i])
 
         # On colle tout ensemble
         row = cur.mogrify(
