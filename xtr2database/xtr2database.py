@@ -22,7 +22,7 @@ from extractors import extract_sig2noise, get_file_date, get_station_id
 HERE = Path(__file__).parent
 
 # TODO: changer
-INFILES = HERE / ".." / "graphes simples" / "data_2023"
+INFILES = HERE / ".." /".." / "graphes simples" / "data_2023"
 
 db_connection = partial(
     psycopg.connect,
@@ -76,7 +76,7 @@ def get_station_data(files):
 
             data["date"].append(dates[i])
             data["constellation"].append(band[:3])  # shortname
-            data["observation_type"].append(band[2:]) # 2 derniers caractères
+            data["observation_type"].append(band[-2:]) # 2 derniers caractères
             data["value"].append(band_value)
 
             length += 1
