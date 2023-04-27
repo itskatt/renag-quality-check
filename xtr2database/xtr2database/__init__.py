@@ -16,7 +16,8 @@ from tqdm import tqdm
 
 from .database import db_connection, fetch_or_create
 from .extractors import get_file_date, get_station_id
-from .metrics import extract_from_header_into, create_metric_dest, insert_header_section_metric
+from .metrics import (Metric, create_metric_dest, extract_from_header_into,
+                      insert_header_section_metric)
 
 
 def get_station_data(files):
@@ -28,8 +29,8 @@ def get_station_data(files):
         - Sig2Noise
         - Multipath
     """
-    sig2noise_data = create_metric_dest("sig2noise")
-    multipath_data = create_metric_dest("multipath")
+    sig2noise_data = create_metric_dest(Metric.SIG2NOISE)
+    multipath_data = create_metric_dest(Metric.MULTIPATH)
 
     extracted_metrics = 0
 
@@ -110,6 +111,7 @@ def main():
             if args.override:
                 print("La serie temporelle précédente va être écrasée.")
                 cur.execute("delete from sig2noise;")
+                cur.execute("delete from multipath;")
                 latest_date = None
 
             else:

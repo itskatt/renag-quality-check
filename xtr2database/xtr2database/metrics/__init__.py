@@ -1,11 +1,18 @@
+from enum import Enum
+
 from psycopg.sql import SQL, Identifier
 
 from ..database import get_constellation_id, get_observation_id
 
 
-def create_metric_dest(metric_type):
+class Metric(Enum):
+    SIG2NOISE = "sig2noise"
+    MULTIPATH = "multipath"
+
+
+def create_metric_dest(metric_type: Metric):
     return {
-        "type": metric_type,
+        "type": metric_type.value,
         "length": 0,
         "data": {
             "date": [],
