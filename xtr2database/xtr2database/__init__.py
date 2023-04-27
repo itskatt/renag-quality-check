@@ -36,13 +36,19 @@ def get_station_data(files):
     for file in files:
         current_date = get_file_date(file.stem)
 
+        extracted_metrics = 0
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
-                if line.startswith("#====== Signal to noise ratio"):
+                if extracted_metrics == 2:
+                    break
+
+                elif line.startswith("#====== Signal to noise ratio"):
                     extract_from_header_into(f, sig2noise_data, current_date)
+                    extracted_metrics += 1
 
                 elif line.startswith("#====== Code multipath"):
                     extract_from_header_into(f, multipath_data, current_date)
+                    extracted_metrics += 1
 
     return [
         sig2noise_data,
