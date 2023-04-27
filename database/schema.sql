@@ -45,3 +45,18 @@ create table sig2noise (
     value real not null
 );
 
+create table multipath (
+    id bigserial constraint multipath_pk primary key,
+    date date not null,
+    station_id smallserial
+        constraint multipath_station_id_fk references station
+        on delete cascade,
+    constellation_id smallserial
+        constraint multipath_constellation_id_fk references constellation
+        on delete cascade,
+    observation_type_id smallserial
+        constraint multipath_observation_type_id_fk references observation_type
+        on delete cascade,
+    value real not null
+);
+
