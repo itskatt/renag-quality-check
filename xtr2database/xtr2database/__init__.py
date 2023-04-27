@@ -7,20 +7,16 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 """
 import argparse
 import sys
+import os
 from datetime import date
 from itertools import groupby
 from pathlib import Path
 
 from tqdm import tqdm
 
-from database import db_connection, fetch_or_create
-from extractors import get_file_date, get_station_id
-from metrics import sig2noise
-
-HERE = Path(__file__).parent
-
-# TODO: changer
-INFILES = HERE / ".." /".." / "graphes simples" / "data_2023"
+from .database import db_connection, fetch_or_create
+from .extractors import get_file_date, get_station_id
+from .metrics import sig2noise
 
 
 def get_station_data(files):
@@ -92,10 +88,12 @@ def get_all_files(after=None):
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
     On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
     """
+    infiles = Path(os.environ["XTR_FILES_ROOT"])
+
     if not after:
         after = date.fromtimestamp(0)
 
-    flattened = [f for f in INFILES.rglob("*.xtr") if get_file_date(f.stem) > after]
+    flattened = [f for f in infiles.rglob("*.xtr") if get_file_date(f.stem) > after]
 
     flattened.sort(key=get_station_id)
 
@@ -114,7 +112,7 @@ def get_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main():
     args = get_args()
 
     with db_connection() as conn:

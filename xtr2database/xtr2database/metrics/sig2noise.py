@@ -1,4 +1,4 @@
-from database import fetch_or_create
+from ..database import fetch_or_create
 
 def extract(f):
     """
