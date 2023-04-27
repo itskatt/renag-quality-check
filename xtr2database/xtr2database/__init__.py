@@ -49,16 +49,7 @@ def get_station_data(files):
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
                 if line.startswith("#====== Signal to noise ratio"):
-                    sig2noise_extracted = sig2noise.extract(f)
-
-                    data = sig2noise_data["data"]
-                    for band, value in sig2noise_extracted.items():
-                        sig2noise_data["length"] += 1
-
-                        data["date"].append(current_date)
-                        data["constellation"].append(band[:3])  # shortname
-                        data["observation_type"].append(band[-2:]) # 2 derniers caractères
-                        data["value"].append(value)
+                    sig2noise.extract_into(f, sig2noise_data, current_date)
 
                     break
 

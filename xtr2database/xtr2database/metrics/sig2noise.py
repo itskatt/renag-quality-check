@@ -1,13 +1,13 @@
 from ..database import fetch_or_create
 
-def extract(f):
+def extract_into(f, dest, current_date):
     """
     Extrait le sig2noise moyen d'un fichier xtr
     """
     next(f)  # entête de section
     next(f)  # entête des moyennes
 
-    out = {}
+    extracted = []
 
     line: str = next(f)
     while line.startswith("="):
@@ -19,11 +19,20 @@ def extract(f):
         except ValueError:
             mean = 0.0
 
-        out[band] = mean
+        extracted.append((band, mean))
 
         line = next(f)
+    
+    # Mise en forme tabulaire
+    data = dest["data"]
+    for band, value in extracted:
+        dest["length"] += 1
 
-    return out
+        data["date"].append(current_date)
+        data["constellation"].append(band[:3])  # shortname
+        data["observation_type"].append(band[-2:]) # 2 derniers caractères
+        data["value"].append(value)
+
 
 def insert(cur, station_id, sig2noise_data):
     to_insert = []
