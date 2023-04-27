@@ -17,17 +17,17 @@ from psycopg import ClientCursor
 from psycopg.rows import dict_row
 from tqdm import tqdm
 
-from extractors import extract_sig_noise_ratio, get_file_date, get_station_id
+from extractors import extract_sig2noise, get_file_date, get_station_id
 
 HERE = Path(__file__).parent
 
-# Temporaire
+# TODO: changer
 INFILES = HERE / ".." / "graphes simples" / "data_2023"
 
 db_connection = partial(
     psycopg.connect,
     dbname="quality_check_data",
-    user="m1m",
+    user="m1m", # TODO: changer
     row_factory=dict_row,
     cursor_factory=ClientCursor
 )
@@ -40,6 +40,10 @@ def get_station_data(files):
     Extrait les données d'une station et les met en forme pour l'insertion dans
     une bdd de type relationelle.
     """
+    extractors = {
+        "Signal to noise ratio": 1
+    }
+
     dates = []
     band_data = []
     all_bands = set()
@@ -51,7 +55,7 @@ def get_station_data(files):
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
                 if line.startswith("#====== Signal to noise ratio"):
-                    data = extract_sig_noise_ratio(f)
+                    data = extract_sig2noise(f)
                     band_data.append(data)
 
                     for band in data.keys():

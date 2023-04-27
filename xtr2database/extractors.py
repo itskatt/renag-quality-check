@@ -20,7 +20,7 @@ def get_station_id(file):
     return file.stem.split("-", 1)[0]
 
 
-def extract_sig_noise_ratio(f):
+def extract_sig2noise(f):
     """
     Extrait le sig2noise moyen d'un fichier xtr
     """
