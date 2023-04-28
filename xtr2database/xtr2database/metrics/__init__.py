@@ -1,4 +1,5 @@
 from enum import Enum
+from collections import defaultdict
 
 from psycopg.sql import SQL, Identifier
 
@@ -8,23 +9,19 @@ from ..database import get_constellation_id, get_observation_id
 class Metric(Enum):
     SIG2NOISE = "sig2noise"
     MULTIPATH = "multipath"
+    OBSERVATION_CS = "observation_cs"
+    # SATELLITE_CS = "satellite_cs"
 
 
 def create_metric_dest(metric_type: Metric):
     return {
         "type": metric_type.value,
         "length": 0,
-        "data": {
-            "date": [],
-            # la sation est rajoutée lors de l'insertion
-            "constellation": [],
-            "observation_type": [],
-            "value": []
-        }
+        "data": defaultdict(list)
     }
 
 
-def extract_from_header_into(f, dest, current_date):
+def extract_from_section_header_into(f, dest, current_date):
     """
     Extrait une donnée dans l'entête d'une section d'un fichier
     xtr et le formatte dans un format tabulaire, prêt pour une
@@ -62,9 +59,6 @@ def extract_from_header_into(f, dest, current_date):
 
 
 def insert_header_section_metric(cur, station_id, metric_data):
-    """
-    Insère le sig2noise dans la base de données.
-    """
     to_insert = []
     data = metric_data["data"]
     for i in range(metric_data["length"]):

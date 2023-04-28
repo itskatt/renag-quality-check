@@ -16,8 +16,8 @@ from tqdm import tqdm
 
 from .database import db_connection, fetch_or_create
 from .extractors import get_file_date, get_station_id
-from .metrics import (Metric, create_metric_dest, extract_from_header_into,
-                      insert_header_section_metric)
+from .metrics import (Metric, create_metric_dest, extract_from_section_header_into,
+                      insert_header_section_metric, cycle_slip)
 
 
 def get_station_data(files):
@@ -32,27 +32,35 @@ def get_station_data(files):
     sig2noise_data = create_metric_dest(Metric.SIG2NOISE)
     multipath_data = create_metric_dest(Metric.MULTIPATH)
 
+    observation_cs = create_metric_dest(Metric.OBSERVATION_CS)
+    satellite_cs = None #create_metric_dest(Metric.SATELLITE_CS)
+
     # Extraction des informations des fichiers
     for file in files:
         current_date = get_file_date(file.stem)
 
-        extracted_metrics = 0
+        parsed_sections = 0
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
-                if extracted_metrics == 2:
+                if parsed_sections == 3:
                     break
 
+                elif line.startswith("#====== Summary statistics"):
+                    cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
+                    parsed_sections += 1
+
                 elif line.startswith("#====== Signal to noise ratio"):
-                    extract_from_header_into(f, sig2noise_data, current_date)
-                    extracted_metrics += 1
+                    extract_from_section_header_into(f, sig2noise_data, current_date)
+                    parsed_sections += 1
 
                 elif line.startswith("#====== Code multipath"):
-                    extract_from_header_into(f, multipath_data, current_date)
-                    extracted_metrics += 1
+                    extract_from_section_header_into(f, multipath_data, current_date)
+                    parsed_sections += 1
 
     return [
         sig2noise_data,
-        multipath_data
+        multipath_data,
+        observation_cs
     ]
 
 
@@ -69,7 +77,10 @@ def insert_into_database(cur, data, station_fullname):
     )
 
     for metric in data:
-        insert_header_section_metric(cur, station_id, metric)
+        if metric["type"] == Metric.OBSERVATION_CS.value:
+            cycle_slip.insert_observation(cur, station_id, metric)
+        else:
+            insert_header_section_metric(cur, station_id, metric)
 
 
 def get_all_files(after=None):
@@ -108,9 +119,9 @@ def main():
         with conn.cursor() as cur:
 
             if args.override:
-                print("La serie temporelle précédente va être écrasée.")
-                cur.execute("delete from sig2noise;")
-                cur.execute("delete from multipath;")
+                print("Les series temporelle précédentes vont êtres écrasées.")
+                for metric in Metric:
+                    cur.execute("delete from " + metric.value)
                 latest_date = None
 
             else:
