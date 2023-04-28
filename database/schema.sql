@@ -71,3 +71,15 @@ create table observation_cs (
         on delete cascade,
     value real not null
 );
+
+create table satellite_cs (
+    id bigserial constraint satellite_cs_pk primary key,
+    date date not null,
+    station_id smallserial
+        constraint satellite_cs_station_id_fk references station
+        on delete cascade,
+    constellation_id smallserial
+        constraint satellite_cs_constellation_id_fk references constellation
+        on delete cascade,
+    value real not null
+);
