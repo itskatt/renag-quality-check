@@ -60,3 +60,14 @@ create table multipath (
     value real not null
 );
 
+create table observation_cs (
+    id bigserial constraint observation_cs_pk primary key,
+    date date not null,
+    station_id smallserial
+        constraint observation_cs_station_id_fk references station
+        on delete cascade,
+    constellation_id smallserial
+        constraint observation_cs_constellation_id_fk references constellation
+        on delete cascade,
+    value real not null
+);
