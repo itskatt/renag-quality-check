@@ -1,3 +1,6 @@
+from collections import defaultdict
+from statistics import mean
+
 from ..database import get_constellation_id
 from . import Metric
 
@@ -43,12 +46,58 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
 
     # formats tabulaire
     obs_data = observation_dest["data"]
-    for constel, (_, csall, expobs) in extracted.items():
+    sat_data = satellite_dest["data"]
+    for constel, (havep, csall, expobs) in extracted.items():
         observation_dest["length"] += 1
-
         obs_data["date"].append(current_date)
         obs_data["constellation"].append(constel)
         obs_data["value"].append(csall / expobs * 100)
+
+        # Première fonction a manipuler le satellite cs
+        satellite_dest["length"] += 1
+        sat_data["date"].append(current_date)
+        sat_data["constellation"].append(constel)
+        sat_data["havep"].append(havep)
+
+
+def extract_from_prepro_res(f, satellite_dest):
+    line = next(f)
+    while not line.startswith("#GNSSLP"):
+        line = next(f)
+    line = next(f)
+
+    count = defaultdict(int)
+    while line != "\n": # NOTE : ici on arrive juste avant la section "Elevation & Azimuth"
+        count[line[1:4]] += 1
+        line = next(f)
+
+    sat_data = satellite_dest["data"]
+    for i in range(satellite_dest["length"] - len(count), satellite_dest["length"]):
+        constel = sat_data["constellation"][i]
+        sat_data["nb_sat"].append(count[constel])
+
+
+def extract_from_band_avail(f, satellite_dest):
+    line = next(f)
+    while not line.startswith("#N"): # #NxBAND
+        line = next(f)
+    line = next(f)
+
+    count = defaultdict(list)
+    while True:
+        splitted = line.split()
+        if splitted[0][-3:] != "CBN":
+            break
+
+        # nSatell
+        count[splitted[0][:3]].append(int(splitted[3] if splitted[3] != "-" else 0))
+
+        line = next(f)
+
+    sat_data = satellite_dest["data"]
+    for i in range(satellite_dest["length"] - len(count), satellite_dest["length"]):
+        constel = sat_data["constellation"][i]
+        sat_data["avg_sat"].append(mean(count[constel]))
 
 
 def insert_observation(cur, station_id, observation_cs):

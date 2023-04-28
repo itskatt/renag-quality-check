@@ -33,7 +33,7 @@ def get_station_data(files):
     multipath_data = create_metric_dest(Metric.MULTIPATH)
 
     observation_cs = create_metric_dest(Metric.OBSERVATION_CS)
-    satellite_cs = None #create_metric_dest(Metric.SATELLITE_CS)
+    satellite_cs = create_metric_dest(Metric.SATELLITE_CS)
 
     # Extraction des informations des fichiers
     for file in files:
@@ -42,11 +42,19 @@ def get_station_data(files):
         parsed_sections = 0
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             for line in f:
-                if parsed_sections == 3:
+                if parsed_sections == 5:
                     break
 
                 elif line.startswith("#====== Summary statistics"):
                     cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
+                    parsed_sections += 1
+
+                elif line.startswith("#====== Preprocessing results"):
+                    cycle_slip.extract_from_prepro_res(f, satellite_cs)
+                    parsed_sections += 1
+
+                elif line.startswith("#====== Band available"):
+                    cycle_slip.extract_from_band_avail(f, satellite_cs)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Signal to noise ratio"):

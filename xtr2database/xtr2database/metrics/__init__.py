@@ -10,7 +10,7 @@ class Metric(Enum):
     SIG2NOISE = "sig2noise"
     MULTIPATH = "multipath"
     OBSERVATION_CS = "observation_cs"
-    # SATELLITE_CS = "satellite_cs"
+    SATELLITE_CS = "satellite_cs"
 
 
 def create_metric_dest(metric_type: Metric):
