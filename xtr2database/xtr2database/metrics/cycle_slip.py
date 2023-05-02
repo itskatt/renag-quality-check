@@ -81,7 +81,7 @@ def extract_from_prepro_res(f, satellite_dest, nb_constell):
         sat_data["nb_sat"].append(count[constel]) # si rien alors 0 (parfait)
 
 
-def extract_from_band_avail(f, satellite_dest):
+def extract_from_band_avail(f, satellite_dest, nb_constell):
     line = next(f)
     while not line.startswith("#N"): # #NxBAND
         line = next(f)
@@ -99,7 +99,7 @@ def extract_from_band_avail(f, satellite_dest):
         line = next(f)
 
     sat_data = satellite_dest["data"]
-    for i in range(satellite_dest["length"] - len(count), satellite_dest["length"]):
+    for i in range(satellite_dest["length"] - nb_constell, satellite_dest["length"]):
         constel = sat_data["constellation"][i]
         sat_data["avg_sat"].append(mean(count[constel]) if len(count[constel]) > 0 else 1)
 
@@ -132,8 +132,6 @@ def insert_satellite(cur, station_id, satellite_cs):
             "(%s,%s,%s,%s)",
             (
                 data["date"][i], station_id, constellation_id,
-                # FIXME : il n'arrive pas a compter le nombre de satellites
-                # pour certains fichiers/constellations
                 data["nb_sat"][i] / data["avg_sat"][i] / data["havep"][i] * 100
             )
         )

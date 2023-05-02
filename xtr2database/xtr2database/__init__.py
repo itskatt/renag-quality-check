@@ -45,7 +45,8 @@ def get_station_data(files):
 
         parsed_sections = 0
         with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
-            # extract_from_prepro_res à besoin de savoir cb ya de constellation au total dans le fichier (pour
+            # extract_from_prepro_res et extract_from_band_avail ont besoin de savoir
+            #   cb ya de constellation au total dans le fichier (pour
             #   marquer clairement à 0 les absences de CS et eviter les décalages)
             # on initialisa a None pour clairment affichier un état illégal
             nb_constell = None 
@@ -58,7 +59,7 @@ def get_station_data(files):
                     parsed_sections += 1
 
                 elif line.startswith("#====== Band available"):
-                    cycle_slip.extract_from_band_avail(f, satellite_cs)
+                    cycle_slip.extract_from_band_avail(f, satellite_cs, nb_constell)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Preprocessing results"):
