@@ -1,6 +1,8 @@
 from collections import defaultdict
 from statistics import mean
 
+from psycopg.sql import SQL, Identifier
+
 from ..database import get_constellation_id
 from . import Metric
 
@@ -113,8 +115,9 @@ def insert_observation(cur, station_id, observation_cs):
         to_insert.append(row)
     
     cur.execute(
-        f"insert into {Metric.OBSERVATION_CS.value}(date, station_id, constellation_id, value) values " +
-        ",".join(to_insert) # FIXME
+        SQL("insert into {}(date, station_id, constellation_id, value) values ")
+        .format(Identifier(Metric.OBSERVATION_CS.value)).as_string(cur) +
+        ",".join(to_insert)
     )
 
 def insert_satellite(cur, station_id, satellite_cs):
@@ -137,6 +140,7 @@ def insert_satellite(cur, station_id, satellite_cs):
         to_insert.append(row)
 
     cur.execute(
-        f"insert into {Metric.SATELLITE_CS.value}(date, station_id, constellation_id, value) values " +
-        ",".join(to_insert) # FIXME
+        SQL("insert into {}(date, station_id, constellation_id, value) values ")
+        .format(Identifier(Metric.SATELLITE_CS.value)).as_string(cur) +
+        ",".join(to_insert)
     )

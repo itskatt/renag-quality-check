@@ -12,12 +12,14 @@ from datetime import date
 from itertools import groupby
 from pathlib import Path
 
+from psycopg.sql import SQL, Identifier
 from tqdm import tqdm
 
 from .database import db_connection, fetch_or_create
 from .extractors import get_file_date, get_station_id
-from .metrics import (Metric, create_metric_dest, extract_from_section_header_into,
-                      insert_header_section_metric, cycle_slip)
+from .metrics import (Metric, create_metric_dest, cycle_slip,
+                      extract_from_section_header_into,
+                      insert_header_section_metric)
 
 
 def get_station_data(files):
@@ -136,7 +138,7 @@ def main():
             if args.override:
                 print("Les series temporelle précédentes vont êtres écrasées.")
                 for metric in Metric:
-                    cur.execute("delete from " + metric.value) # FIXME
+                    cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
                 latest_date = None
 
             else:
