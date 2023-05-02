@@ -28,6 +28,8 @@ def get_station_data(files):
     Les données extraites :
         - Sig2Noise
         - Multipath
+        - Observation CS
+        - Satellite CS
     """
     sig2noise_data = create_metric_dest(Metric.SIG2NOISE)
     multipath_data = create_metric_dest(Metric.MULTIPATH)
@@ -45,6 +47,7 @@ def get_station_data(files):
                 if parsed_sections == 5:
                     break
 
+                # TODO : mettre dans l'ordre du fichier
                 elif line.startswith("#====== Summary statistics"):
                     cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
                     parsed_sections += 1
@@ -68,7 +71,8 @@ def get_station_data(files):
     return [
         sig2noise_data,
         multipath_data,
-        observation_cs
+        observation_cs,
+        satellite_cs
     ]
 
 
@@ -87,6 +91,10 @@ def insert_into_database(cur, data, station_fullname):
     for metric in data:
         if metric["type"] == Metric.OBSERVATION_CS.value:
             cycle_slip.insert_observation(cur, station_id, metric)
+
+        elif metric["type"] == Metric.SATELLITE_CS.value:
+            cycle_slip.insert_satellite(cur, station_id, metric)
+
         else:
             insert_header_section_metric(cur, station_id, metric)
 
@@ -129,7 +137,7 @@ def main():
             if args.override:
                 print("Les series temporelle précédentes vont êtres écrasées.")
                 for metric in Metric:
-                    cur.execute("delete from " + metric.value)
+                    cur.execute("delete from " + metric.value) # FIXME
                 latest_date = None
 
             else:

@@ -97,7 +97,7 @@ def extract_from_band_avail(f, satellite_dest):
     sat_data = satellite_dest["data"]
     for i in range(satellite_dest["length"] - len(count), satellite_dest["length"]):
         constel = sat_data["constellation"][i]
-        sat_data["avg_sat"].append(mean(count[constel]))
+        sat_data["avg_sat"].append(mean(count[constel]) if len(count[constel]) > 0 else 1)
 
 
 def insert_observation(cur, station_id, observation_cs):
@@ -114,5 +114,29 @@ def insert_observation(cur, station_id, observation_cs):
     
     cur.execute(
         f"insert into {Metric.OBSERVATION_CS.value}(date, station_id, constellation_id, value) values " +
-        ",".join(to_insert)
+        ",".join(to_insert) # FIXME
+    )
+
+def insert_satellite(cur, station_id, satellite_cs):
+    return # FIXME
+    to_insert = []
+    data = satellite_cs["data"]
+    for i in range(satellite_cs["length"]):
+        constellation_id = get_constellation_id(cur, data["constellation"][i])
+
+        row = cur.mogrify(
+            "(%s,%s,%s,%s)",
+            (
+                data["date"][i], station_id, constellation_id,
+                # FIXME : problème d'indice, voir images
+                # i == 253 alors que len(nb_sat) == 253...
+                # les autres len(...) == 255 (cohérent avec length)
+                data["nb_sat"][i] / data["avg_sat"][i] / data["havep"][i] * 100
+            )
+        )
+        to_insert.append(row)
+
+    cur.execute(
+        f"insert into {Metric.SATELLITE_CS.value}(date, station_id, constellation_id, value) values " +
+        ",".join(to_insert) # FIXME
     )
