@@ -47,25 +47,24 @@ def get_station_data(files):
                 if parsed_sections == 5:
                     break
 
-                # TODO : mettre dans l'ordre du fichier
                 elif line.startswith("#====== Summary statistics"):
                     cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
-                    parsed_sections += 1
-
-                elif line.startswith("#====== Preprocessing results"):
-                    cycle_slip.extract_from_prepro_res(f, satellite_cs)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Band available"):
                     cycle_slip.extract_from_band_avail(f, satellite_cs)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Signal to noise ratio"):
-                    extract_from_section_header_into(f, sig2noise_data, current_date)
+                elif line.startswith("#====== Preprocessing results"):
+                    cycle_slip.extract_from_prepro_res(f, satellite_cs)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Code multipath"):
                     extract_from_section_header_into(f, multipath_data, current_date)
+                    parsed_sections += 1
+
+                elif line.startswith("#====== Signal to noise ratio"):
+                    extract_from_section_header_into(f, sig2noise_data, current_date)
                     parsed_sections += 1
 
     return [
