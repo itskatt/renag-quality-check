@@ -7,6 +7,9 @@ from ..database import get_constellation_id, get_observation_id
 
 
 class Metric(Enum):
+    """
+    Toutes les métriques disponibles.
+    """
     SIG2NOISE = "sig2noise"
     MULTIPATH = "multipath"
     OBSERVATION_CS = "observation_cs"
@@ -14,6 +17,9 @@ class Metric(Enum):
 
 
 def create_metric_dest(metric_type: Metric):
+    """
+    Crée un dictionnaire qui contiendra les données d'une métrique.
+    """
     return {
         "type": metric_type.value,
         "length": 0,
@@ -59,6 +65,10 @@ def extract_from_section_header_into(f, dest, current_date):
 
 
 def insert_header_section_metric(cur, station_id, metric_data):
+    """
+    Insère les données d'une métrique extraite dans l'entête d'une section
+    dans une base de données.
+    """
     to_insert = []
     data = metric_data["data"]
     for i in range(metric_data["length"]):

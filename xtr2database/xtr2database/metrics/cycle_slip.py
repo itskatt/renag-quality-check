@@ -8,6 +8,10 @@ from . import Metric
 
 
 def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
+    """
+    Extraits des données de la section "Summary statistics" utilisé pour les
+    calculs des metriques observation cs et satellite cs.
+    """
     line: str = next(f)
 
     # On va jusqu'a la partie interessante
@@ -65,6 +69,10 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
 
 
 def extract_from_prepro_res(f, satellite_dest, nb_constell):
+    """
+    Extraits des données de la section "Preprocessing results" utilisé pour les
+    calculs du satellite cs.
+    """
     line = next(f)
     while not line.startswith("#GNSSLP"):
         line = next(f)
@@ -82,6 +90,10 @@ def extract_from_prepro_res(f, satellite_dest, nb_constell):
 
 
 def extract_from_band_avail(f, satellite_dest, nb_constell):
+    """
+    Extraits des données de la section "Band available" utilisé pour les
+    calculs du satellite cs.
+    """
     line = next(f)
     while not line.startswith("#N"): # #NxBAND
         line = next(f)
@@ -105,6 +117,9 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
 
 
 def insert_observation(cur, station_id, observation_cs):
+    """
+    Insère dans la base de données les données de la metrique observation cs.
+    """
     to_insert = []
     data = observation_cs["data"]
     for i in range(observation_cs["length"]):
@@ -122,7 +137,11 @@ def insert_observation(cur, station_id, observation_cs):
         ",".join(to_insert)
     )
 
+
 def insert_satellite(cur, station_id, satellite_cs):
+    """
+    Insère dans la base de données les données de la metrique satellite cs.
+    """
     to_insert = []
     data = satellite_cs["data"]
     for i in range(satellite_cs["length"]):
@@ -136,7 +155,6 @@ def insert_satellite(cur, station_id, satellite_cs):
             )
         )
         to_insert.append(row)
-
 
     cur.execute(
         SQL("insert into {}(date, station_id, constellation_id, value) values ")

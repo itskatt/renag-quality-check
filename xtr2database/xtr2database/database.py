@@ -40,6 +40,9 @@ def fetch_or_create(cur, key, fetch_query, *insert_args):
 
 
 def get_constellation_id(cur, constellation_shortname):
+    """
+    Récupère l'ID d'une constellation à partir de la base de données.
+    """
     return fetch_or_create(
         cur, constellation_shortname,
         "select id from constellation where shortname = %s;",
@@ -50,6 +53,9 @@ def get_constellation_id(cur, constellation_shortname):
 
 
 def get_observation_id(cur, observation_type):
+    """
+    Récupère l'ID d'un type d'observation à partir de la base de données.
+    """
     return fetch_or_create(
         cur, observation_type,
         "select id from observation_type where type = %s;",

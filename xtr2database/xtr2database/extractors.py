@@ -18,5 +18,3 @@ def get_station_id(file):
     Renvoie l'identifiant d'une station en fonction de son nom de fichier.
     """
     return file.stem.split("-", 1)[0]
-
-
