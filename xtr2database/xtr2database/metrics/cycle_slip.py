@@ -1,5 +1,5 @@
 from collections import defaultdict
-from statistics import mean
+from statistics import fmean
 
 from psycopg.sql import SQL, Identifier
 
@@ -113,7 +113,7 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
     sat_data = satellite_dest["data"]
     for i in range(satellite_dest["length"] - nb_constell, satellite_dest["length"]):
         constel = sat_data["constellation"][i]
-        sat_data["avg_sat"].append(mean(count[constel]) if len(count[constel]) > 0 else 1)
+        sat_data["avg_sat"].append(fmean(count[constel]) if len(count[constel]) > 0 else 1)
 
 
 def insert_observation(cur, station_id, observation_cs):
