@@ -81,11 +81,13 @@ def get_station_data(files):
                     extract_from_section_header_into(f, sig2noise_data, current_date)
                     parsed_sections += 1
 
-    return (
-        sig2noise_data,
-        multipath_data,
-        observation_cs,
-        satellite_cs
+    return ((
+            sig2noise_data,
+            multipath_data,
+            observation_cs,
+            satellite_cs
+        ),
+        skyplot_data
     )
 
 
@@ -101,15 +103,15 @@ def insert_into_database(cur, data, station_fullname):
         (station_fullname[:4], station_fullname)
     )
 
-    for metric in data:
-        if metric["type"] == TimeSeries.OBSERVATION_CS.value:
-            cycle_slip.insert_observation(cur, station_id, metric)
+    for time_serie in data[0]: # en premier les séries temporelles
+        if time_serie["type"] == TimeSeries.OBSERVATION_CS.value:
+            cycle_slip.insert_observation(cur, station_id, time_serie)
 
-        elif metric["type"] == TimeSeries.SATELLITE_CS.value:
-            cycle_slip.insert_satellite(cur, station_id, metric)
+        elif time_serie["type"] == TimeSeries.SATELLITE_CS.value:
+            cycle_slip.insert_satellite(cur, station_id, time_serie)
 
         else:
-            insert_header_section_metric(cur, station_id, metric)
+            insert_header_section_metric(cur, station_id, time_serie)
 
 
 def get_all_files(after=None):
