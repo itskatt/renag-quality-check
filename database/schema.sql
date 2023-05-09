@@ -1,3 +1,6 @@
+------------------------------------------------------------------------------------------------------------------------
+-- Tables de bases
+
 create table constellation (
     id smallserial constraint satellite_system_pk primary key,
     fullname varchar(10) not null,
@@ -29,6 +32,9 @@ create table station_network (
         on delete cascade,
     constraint station_network_pk primary key (station_id, network_id)
 );
+
+------------------------------------------------------------------------------------------------------------------------
+-- Tables de séries temporelles
 
 create table sig2noise (
     id bigserial constraint snr_pk primary key,
