@@ -28,3 +28,30 @@ def extract_elevation_azimut(f):
     _extract_coord(f, data)
 
     return data
+
+
+def extract_individual_multipath(f):
+    data = defaultdict(lambda: defaultdict(list))
+
+    while True:
+        line = next(f)
+
+        if line == "\n":
+            # est-ce que on se situe entre deux bandes ou à
+            # la fin des données à extraire
+            line = next(f)
+            if line == "\n":
+                # fin des données à extraire
+                break
+
+        # on peut commencer à extraire
+        splitted = line.split()
+
+        constel = splitted[0][0:3]
+        band = splitted[0][4:7]
+
+        data[constel][band].append(
+            [int(v) if v != "-" else -1 for v in splitted[4:]]
+        )
+
+    return data
