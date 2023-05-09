@@ -4,7 +4,7 @@ from statistics import fmean
 from psycopg.sql import SQL, Identifier
 
 from ..database import get_constellation_id
-from . import Metric
+from . import TimeSeries
 
 
 def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
@@ -133,7 +133,7 @@ def insert_observation(cur, station_id, observation_cs):
 
     cur.execute(
         SQL("insert into {}(date, station_id, constellation_id, value) values ")
-        .format(Identifier(Metric.OBSERVATION_CS.value)).as_string(cur) +
+        .format(Identifier(TimeSeries.OBSERVATION_CS.value)).as_string(cur) +
         ",".join(to_insert)
     )
 
@@ -158,6 +158,6 @@ def insert_satellite(cur, station_id, satellite_cs):
 
     cur.execute(
         SQL("insert into {}(date, station_id, constellation_id, value) values ")
-        .format(Identifier(Metric.SATELLITE_CS.value)).as_string(cur) +
+        .format(Identifier(TimeSeries.SATELLITE_CS.value)).as_string(cur) +
         ",".join(to_insert)
     )

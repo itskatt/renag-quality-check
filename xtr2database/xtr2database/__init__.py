@@ -17,9 +17,9 @@ from tqdm import tqdm
 
 from .database import db_connection, fetch_or_create
 from .extractors import get_file_date, get_station_id
-from .metrics import (Metric, create_metric_dest, cycle_slip,
+from .metrics import (TimeSeries, create_metric_dest, cycle_slip,
                       extract_from_section_header_into,
-                      insert_header_section_metric)
+                      insert_header_section_metric, skyplot)
 
 
 def get_station_data(files):
@@ -33,11 +33,13 @@ def get_station_data(files):
         - Observation CS
         - Satellite CS
     """
-    sig2noise_data = create_metric_dest(Metric.SIG2NOISE)
-    multipath_data = create_metric_dest(Metric.MULTIPATH)
+    sig2noise_data = create_metric_dest(TimeSeries.SIG2NOISE)
+    multipath_data = create_metric_dest(TimeSeries.MULTIPATH)
 
-    observation_cs = create_metric_dest(Metric.OBSERVATION_CS)
-    satellite_cs = create_metric_dest(Metric.SATELLITE_CS)
+    observation_cs = create_metric_dest(TimeSeries.OBSERVATION_CS)
+    satellite_cs = create_metric_dest(TimeSeries.SATELLITE_CS)
+
+    skyplot_data = []
 
     # Extraction des informations des fichiers
     for file in files:
@@ -49,9 +51,9 @@ def get_station_data(files):
             #   cb ya de constellation au total dans le fichier (pour
             #   marquer clairement à 0 les absences de CS et eviter les décalages)
             # on initialisa a None pour clairment affichier un état illégal
-            nb_constell = None 
+            nb_constell = None
             for line in f:
-                if parsed_sections == 5:
+                if parsed_sections == 6:
                     break
 
                 elif line.startswith("#====== Summary statistics"):
@@ -66,6 +68,11 @@ def get_station_data(files):
                     cycle_slip.extract_from_prepro_res(f, satellite_cs, nb_constell)
                     parsed_sections += 1
 
+                elif line.startswith("#====== Elevation & Azimuth"):
+                    ele_azi_data = skyplot.extract_elevation_azimut(f)
+                    skyplot_data.append((current_date, ele_azi_data))
+                    parsed_sections += 1
+
                 elif line.startswith("#====== Code multipath"):
                     extract_from_section_header_into(f, multipath_data, current_date)
                     parsed_sections += 1
@@ -74,12 +81,12 @@ def get_station_data(files):
                     extract_from_section_header_into(f, sig2noise_data, current_date)
                     parsed_sections += 1
 
-    return [
+    return (
         sig2noise_data,
         multipath_data,
         observation_cs,
         satellite_cs
-    ]
+    )
 
 
 def insert_into_database(cur, data, station_fullname):
@@ -95,10 +102,10 @@ def insert_into_database(cur, data, station_fullname):
     )
 
     for metric in data:
-        if metric["type"] == Metric.OBSERVATION_CS.value:
+        if metric["type"] == TimeSeries.OBSERVATION_CS.value:
             cycle_slip.insert_observation(cur, station_id, metric)
 
-        elif metric["type"] == Metric.SATELLITE_CS.value:
+        elif metric["type"] == TimeSeries.SATELLITE_CS.value:
             cycle_slip.insert_satellite(cur, station_id, metric)
 
         else:
@@ -142,7 +149,7 @@ def main():
 
             if args.override:
                 print("Les series temporelle précédentes vont êtres écrasées.")
-                for metric in Metric:
+                for metric in TimeSeries:
                     cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
                 latest_date = None
 

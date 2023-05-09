@@ -6,7 +6,7 @@ from psycopg.sql import SQL, Identifier
 from ..database import get_constellation_id, get_observation_id
 
 
-class Metric(Enum):
+class TimeSeries(Enum):
     """
     Toutes les métriques disponibles.
     """
@@ -16,7 +16,7 @@ class Metric(Enum):
     SATELLITE_CS = "satellite_cs"
 
 
-def create_metric_dest(metric_type: Metric):
+def create_metric_dest(metric_type: TimeSeries):
     """
     Crée un dictionnaire qui contiendra les données d'une métrique.
     """
