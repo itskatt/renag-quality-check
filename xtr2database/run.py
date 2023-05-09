@@ -5,7 +5,7 @@ import xtr2database
 
 HERE = Path(__file__).parent
 
-infiles = HERE / ".." / ".." / "graphes simples" / "data_2023"
+infiles = HERE / ".." / ".." / "renag-data-2023-small"
 
 # TODO : documenter cette variable d'environnement ou bien
 #      la rendre configurable par un argument de ligne de commande
