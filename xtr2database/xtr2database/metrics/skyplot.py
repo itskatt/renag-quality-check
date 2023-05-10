@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime as dt
 
 
 def _extract_coord(f, data):
@@ -30,7 +31,7 @@ def extract_elevation_azimut(f):
     return data
 
 
-def extract_individual_multipath(f):
+def extract_individual_multipath(f, date):
     data = defaultdict(lambda: defaultdict(list))
 
     while True:
@@ -50,8 +51,12 @@ def extract_individual_multipath(f):
         constel = splitted[0][0:3]
         band = splitted[0][4:7]
 
-        data[constel][band].append(
+        time = dt.time.fromisoformat(splitted[2])
+        line_datetime = dt.datetime.combine(date, time)
+
+        data[constel][band].append((
+            line_datetime,
             [int(v) if v != "-" else -1 for v in splitted[4:]]
-        )
+        ))
 
     return data

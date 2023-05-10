@@ -76,12 +76,13 @@ def get_station_data(files):
 
                 elif line.startswith("#====== Code multipath"):
                     extract_from_section_header_into(f, multipath_data, current_date)
-                    ind_multipath_data = skyplot.extract_individual_multipath(f)
+                    ind_multipath_data = skyplot.extract_individual_multipath(f, current_date)
                     skyplot_data[-1].append(ind_multipath_data)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Signal to noise ratio"):
                     extract_from_section_header_into(f, sig2noise_data, current_date)
+                    # TODO : extract individual snr
                     parsed_sections += 1
 
     return ((
