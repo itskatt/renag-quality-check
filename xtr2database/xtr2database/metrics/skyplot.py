@@ -31,7 +31,7 @@ def extract_elevation_azimut(f):
     return data
 
 
-def extract_individual_multipath(f, date):
+def extract_individual_metric(f, date):
     data = defaultdict(lambda: defaultdict(list))
 
     while True:
