@@ -1,6 +1,8 @@
 from collections import defaultdict
 import datetime as dt
 
+from ..database import get_constellation_id
+
 
 def _extract_coord(f, data):
     next(f) # entête partie
@@ -60,3 +62,21 @@ def extract_individual_metric(f, date):
         ))
 
     return data
+
+
+def insert(cur, station_id, skyplot_data):
+    to_insert = []
+
+    for ele_azi_data, ind_multipath_data, ind_sig2noise_data in skyplot_data:
+        
+        # Pour chaque constellation de satellites...
+        for constel, coords in ele_azi_data.items():
+            constellation_id = get_constellation_id(cur, constel)
+
+            # Pour chaque "lignes" de coordonées (même datetime)
+            for ele_coords, azi_coords in zip(coords["ELE"], coords["AZI"]):
+                # On joint les coordonées ensemble (ele, azi)
+                for i, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
+                    satellite_number = i + 1
+
+                    (ele, azi)

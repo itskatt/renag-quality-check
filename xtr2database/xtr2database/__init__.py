@@ -71,7 +71,7 @@ def get_station_data(files):
 
                 elif line.startswith("#====== Elevation & Azimuth"):
                     ele_azi_data = skyplot.extract_elevation_azimut(f)
-                    skyplot_data.append([current_date, ele_azi_data]) # puis multipath puis sig2noise
+                    skyplot_data.append([ele_azi_data]) # puis multipath puis sig2noise
                     parsed_sections += 1
 
                 elif line.startswith("#====== Code multipath"):
@@ -82,8 +82,8 @@ def get_station_data(files):
 
                 elif line.startswith("#====== Signal to noise ratio"):
                     extract_from_section_header_into(f, sig2noise_data, current_date)
-                    ind_snr_data = skyplot.extract_individual_metric(f, current_date)
-                    skyplot_data[-1].append(ind_snr_data)
+                    ind_sig2noise_data = skyplot.extract_individual_metric(f, current_date)
+                    skyplot_data[-1].append(ind_sig2noise_data)
                     parsed_sections += 1
 
     return ((
@@ -117,6 +117,9 @@ def insert_into_database(cur, data, station_fullname):
 
         else:
             insert_header_section_metric(cur, station_id, time_serie)
+
+    # ensuite le skyplot (pas de boucle comme y'en a un seul)
+    skyplot.insert(cur, station_id, data[1])
 
 
 def get_all_files(after=None):
