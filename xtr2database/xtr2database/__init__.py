@@ -40,7 +40,7 @@ def get_station_data(files):
     observation_cs = create_metric_dest(TimeSeries.OBSERVATION_CS)
     satellite_cs = create_metric_dest(TimeSeries.SATELLITE_CS)
 
-    skyplot_data = []
+    skyplot_data = skyplot.create_dest()
 
     # Extraction des informations des fichiers
     for file in files:
@@ -70,20 +70,17 @@ def get_station_data(files):
                     parsed_sections += 1
 
                 elif line.startswith("#====== Elevation & Azimuth"):
-                    ele_azi_data = skyplot.extract_elevation_azimut(f)
-                    skyplot_data.append([ele_azi_data]) # puis multipath puis sig2noise
+                    skyplot.extract_elevation_azimut(f, skyplot_data, current_date)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Code multipath"):
                     extract_from_section_header_into(f, multipath_data, current_date)
-                    ind_multipath_data = skyplot.extract_individual_metric(f, current_date)
-                    skyplot_data[-1].append(ind_multipath_data)
+                    skyplot.extract_multipath(f, skyplot_data, current_date)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Signal to noise ratio"):
                     extract_from_section_header_into(f, sig2noise_data, current_date)
-                    ind_sig2noise_data = skyplot.extract_individual_metric(f, current_date)
-                    skyplot_data[-1].append(ind_sig2noise_data)
+                    skyplot.extract_sig2noise(f, skyplot_data, current_date)
                     parsed_sections += 1
 
     return ((
