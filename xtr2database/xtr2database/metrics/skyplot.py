@@ -83,4 +83,19 @@ def extract_sig2noise(f, data, date):
 
 
 def insert(cur, station_id, skyplot_data):
-    pass
+    to_insert = []
+
+    for constel, constel_data in skyplot_data.items():
+        constellation_id = get_constellation_id(cur, constel)
+
+        for datetime, all_data in constel_data.items():
+
+            # Pour chaque "lignes" de coordonées
+            for ele_coords, azi_coords in zip(all_data["ELE"], all_data["AZI"]):
+                
+                # On joint les coordonées ensemble (ele, azi)
+                for i, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
+                    satellite_number = i + 1
+
+                    # Reste plus qu'a calculer les mp et sig2noises...
+                    # TODO

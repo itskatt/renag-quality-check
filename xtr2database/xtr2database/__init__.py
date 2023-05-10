@@ -116,7 +116,7 @@ def insert_into_database(cur, data, station_fullname):
             insert_header_section_metric(cur, station_id, time_serie)
 
     # ensuite le skyplot (pas de boucle comme y'en a un seul)
-    skyplot.insert(cur, station_id, data[1])
+    # TODO skyplot.insert(cur, station_id, data[1])
 
 
 def get_all_files(after=None):
