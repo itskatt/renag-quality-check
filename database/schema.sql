@@ -89,3 +89,24 @@ create table satellite_cs (
         on delete cascade,
     value real not null
 );
+
+create table skyplot (
+    id bigserial constraint skyplot_pk primary key,
+    datetime timestamp not null,
+    station_id smallserial
+        constraint skyplot_station_id_fk references station
+        on delete cascade,
+    constellation_id smallserial
+        constraint skyplot_constellation_id_fk references constellation
+        on delete cascade,
+    satellite smallint not null,
+    elevation smallint not null,
+    azimut smallint not null,
+    mp1 smallint not null,
+    mp2 smallint not null,
+    mp5 smallint not null,
+    snr1 smallint not null,
+    snr2 smallint not null,
+    snr5 smallint not null,
+    unique (datetime, station_id, constellation_id, satellite)
+);
