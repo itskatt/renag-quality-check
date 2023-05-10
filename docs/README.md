@@ -4,9 +4,24 @@
 
 TODO cdc
 
-## Utilisation du script d'alimentation de la base de données
+### Modification des couleurs des courbes
 
 TODO
+
+### Administration
+
+TODO
+
+- Compte admin
+- Ajouter des utilisateurs
+
+## Utilisation du script d'alimentation de la base de données
+
+TODO xtr2database <!-- attendre que l'interface CLI soit definie -->
+
+## Sauvegarde des données
+
+TODO scripts `pg_dump`
 
 ## Déployement sur une nouvelle machine
 
@@ -32,4 +47,12 @@ Installez la version 9.5 de Grafana : https://grafana.com/grafana/download?platf
 
 ### Configuration de Grafana
 
-TODO
+TODO documenter le fichier de config
+
+### Connexion à la base de donnée
+
+TODO grafana <-> bdd avec bon utilisateur
+
+### Importation des dashboards
+
+TODO comment importer les dashboards
