@@ -44,14 +44,15 @@ def get_station_data(files):
 
     # Extraction des informations des fichiers
     for file in files:
-        current_date = get_file_date(file.stem)
+        filename = file.split(".")[-2].rpartition(os.sep)[-1]
+        current_date = get_file_date(filename)
 
         parsed_sections = 0
-        with file.open("r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
+        with open(file, "r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             # extract_from_prepro_res et extract_from_band_avail ont besoin de savoir
             #   cb ya de constellation au total dans le fichier (pour
             #   marquer clairement à 0 les absences de CS et eviter les décalages)
-            # on initialisa a None pour clairment affichier un état illégal
+            # on initialisa a None pour clairement afficher un état illégal
             nb_constell = None
             for line in f:
                 if parsed_sections == 6:
@@ -203,7 +204,7 @@ def main():
     # groupement des fichiers par station
     stations = []
     for key, group in groupby(all_files, get_station_id):
-        stations.append((key, list(group)))
+        stations.append((key, list(str(f.resolve()) for f in group)))
 
     print("Traitement des stations...")
     for station_fullname, files in tqdm(stations):
