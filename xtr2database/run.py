@@ -7,8 +7,9 @@ HERE = Path(__file__).parent
 
 infiles = HERE / ".." / ".." / "renag-data-2023-small"
 
-# TODO : documenter cette variable d'environnement ou bien
-#      la rendre configurable par un argument de ligne de commande
-os.environ["XTR_FILES_ROOT"] = str(infiles.resolve())
+if __name__ == "__main__": # obligatoire comme plusieurs processus
+    # TODO : documenter cette variable d'environnement ou bien
+    #      la rendre configurable par un argument de ligne de commande
+    os.environ["XTR_FILES_ROOT"] = str(infiles.resolve())
 
-xtr2database.main()
+    xtr2database.main()

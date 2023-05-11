@@ -8,6 +8,8 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 import argparse
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor as PoolExecutor
+from concurrent.futures import as_completed
 from datetime import date
 from itertools import groupby
 from pathlib import Path
@@ -206,8 +208,11 @@ def main():
     for key, group in groupby(all_files, get_station_id):
         stations.append((key, list(str(f.resolve()) for f in group)))
 
-    print("Traitement des stations...")
-    for station_fullname, files in tqdm(stations):
-        process_station(station_fullname, files)
+    print("Traitement des stations en paralèlle...")
+    with tqdm(total=len(stations)) as pbar:
+        with PoolExecutor() as executor:
+            futures = [executor.submit(process_station, name, files) for name, files in stations]
+            for future in as_completed(futures):
+                pbar.update(1)
 
     print("OK !")
