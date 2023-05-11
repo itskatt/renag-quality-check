@@ -5,6 +5,10 @@ from ..database import get_constellation_id
 
 
 def _dd_callback():
+    """
+    Contruit la partie qui acceuil l'évélation, l'azimut ainsi que les multipath et
+    le sig23noise en fonction des bandes.
+    """
     return {
         "ELE": [],
         "AZI": [],
@@ -15,11 +19,18 @@ def _dd_callback():
 
 
 def create_dest():
+    """
+    Contruit la structure de données qui acceuil les données pour les skyplots
+    d'une station.
+    """
     #      constel             datetime
     return defaultdict(lambda: defaultdict(_dd_callback))
 
 
 def _extract_coord(f, date, data):
+    """
+    Extrait l'evevation où l'azimut.
+    """
     next(f) # entête partie
 
     line = next(f)
@@ -41,6 +52,9 @@ def _extract_coord(f, date, data):
 
 
 def extract_elevation_azimut(f, data, date):
+    """
+    Extrait l'elevation et l'azimut de la section correspondante.
+    """
     # elevation
     _extract_coord(f, date, data)
 
@@ -49,6 +63,10 @@ def extract_elevation_azimut(f, data, date):
 
 
 def _extract_individual_metric(f, data, date, metric_type):
+    """
+    Extrait une metrique "individuelle" : dans notre cas le multipath ou
+    le sig2noise.
+    """
     while True:
         line = next(f)
 
@@ -75,14 +93,23 @@ def _extract_individual_metric(f, data, date, metric_type):
 
 
 def extract_multipath(f, data, date):
+    """
+    Extrait le multipath indivuduel de sa section.
+    """
     _extract_individual_metric(f, data, date, "mp")
 
 
 def extract_sig2noise(f, data, date):
+    """
+    Extrait le sig2noise indivuduel de sa section.
+    """
     _extract_individual_metric(f, data, date, "sig2noise")
 
 
 def insert(cur, station_id, skyplot_data):
+    """
+    Insère les données du skyplot dans la base de données.
+    """
     to_insert = []
 
     for constel, constel_data in skyplot_data.items():
