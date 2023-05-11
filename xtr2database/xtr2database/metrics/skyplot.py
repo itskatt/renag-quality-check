@@ -13,8 +13,8 @@ def _dd_callback():
         "ELE": [],
         "AZI": [],
         #     toute les bandes
-        "mp": defaultdict(list),
-        "sig2noise": defaultdict(list)
+        "mp": {},
+        "sig2noise": {}
     }
 
 
@@ -87,6 +87,9 @@ def _extract_individual_metric(f, data, date, metric_type):
         time = dt.time.fromisoformat(splitted[2])
         line_datetime = dt.datetime.combine(date, time)
 
+        if band not in data[constel][line_datetime][metric_type].keys():
+            data[constel][line_datetime][metric_type][band] = []
+
         data[constel][line_datetime][metric_type][band].append(
             [int(v) if v != "-" else None for v in splitted[4:]]
         )
@@ -106,6 +109,45 @@ def extract_sig2noise(f, data, date):
     _extract_individual_metric(f, data, date, "sig2noise")
 
 
+_SKYPLOT_METRICS = {
+    1: {
+        "GPS": ("1C", "1*"),
+        "GLO": ("1C", "1*"),
+        "GAL": ("1X", "1*"),
+        "BDS": ("2I", "2*")
+    },
+    2: {
+        "GPS": ("2W", "2*"),
+        "GLO": ("2P", "2*"),
+        "GAL": ("7X", "7*"),
+        "BDS": ("6I", "6*")
+    },
+    5: {
+        "GPS": ("5X", "5*"),
+        "GLO": ("3X", "3*"),
+        "BDS": ("7I", "7*")
+    }
+}
+
+
+def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
+    try:
+        band, backup = _SKYPLOT_METRICS[number][constel]
+    except KeyError:
+        # Si la constellation n'est pas dans le tableau
+        return -1
+
+    to_return = None
+    try:
+        to_return = all_data[metric][band][i_line][i_coord]
+    except KeyError:
+        for key in all_data[metric].keys():
+            if key[0] == backup[0]:
+                to_return = all_data[metric][key][i_line][i_coord]
+
+    return to_return or -1
+
+
 def insert(cur, station_id, skyplot_data):
     """
     Insère les données du skyplot dans la base de données.
@@ -118,11 +160,43 @@ def insert(cur, station_id, skyplot_data):
         for datetime, all_data in constel_data.items():
 
             # Pour chaque "lignes" de coordonées
-            for ele_coords, azi_coords in zip(all_data["ELE"], all_data["AZI"]):
+            for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
                 
                 # On joint les coordonées ensemble (ele, azi)
-                for i, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
-                    satellite_number = i + 1
+                for i_coord, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
+                    if ele is None:
+                        continue
 
-                    # Reste plus qu'a calculer les mp et sig2noises...
-                    # TODO
+                    satellite_number = i_coord + 1
+
+                    # On peut enfin insèrer la rangée !
+                    row = cur.mogrify(
+                        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                        (
+                            datetime, station_id, constellation_id,
+                            satellite_number, ele, azi,
+
+                            # Les mp1-5
+                            _get_skyplot_metric(constel, "mp", 1, i_line, i_coord, all_data),
+                            _get_skyplot_metric(constel, "mp", 2, i_line, i_coord, all_data),
+                            _get_skyplot_metric(constel, "mp", 5, i_line, i_coord, all_data),
+
+                            # Les sig2noise1-5
+                            _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data),
+                            _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data),
+                            _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data),
+                        )
+                    )
+
+                    to_insert.append(row)
+    
+    cur.execute(
+        """--sql
+        insert into skyplot (
+            datetime, station_id, constellation_id,
+            satellite, elevation, azimut,
+            mp1, mp2, mp5,
+            sig2noise1, sig2noise2, sig2noise3
+        ) values
+        """ + ",".join(to_insert)
+    )

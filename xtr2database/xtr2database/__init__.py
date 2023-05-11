@@ -116,7 +116,7 @@ def insert_into_database(cur, data, station_fullname):
             insert_header_section_metric(cur, station_id, time_serie)
 
     # ensuite le skyplot (pas de boucle comme y'en a un seul)
-    # TODO skyplot.insert(cur, station_id, data[1])
+    skyplot.insert(cur, station_id, data[1])
 
 
 def get_all_files(after=None):
@@ -194,6 +194,8 @@ def main():
     for station_fullname, files in tqdm(stations):
         station_data = get_station_data(files)
         extracted.append((station_data, station_fullname))
+
+        break # TODO une seule station
 
     print("Insertion des données...")
     with db_connection() as conn:
