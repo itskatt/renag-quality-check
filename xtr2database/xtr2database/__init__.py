@@ -136,6 +136,19 @@ def get_all_files(after=None):
     return flattened
 
 
+def process_station(station_fullname, station_files):
+    """
+    Extrait les données d'une sation et les insère dans la base de données.
+    Les noms des fichiers doivent être des chaines de caractère
+    """
+    station_data = get_station_data(station_files)
+
+    # TODO réutiliser les connections ?
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            insert_into_database(cur, station_data, station_fullname)
+
+
 def get_args():
     parser = argparse.ArgumentParser()
 
@@ -159,6 +172,9 @@ def main():
                 for metric in TimeSeries:
                     cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
                 latest_date = None
+
+                print("La table des skyplots va être écrasée.")
+                cur.execute("delete from skyplot;")
 
             else:
                 cur.execute("""--sql
@@ -189,18 +205,8 @@ def main():
     for key, group in groupby(all_files, get_station_id):
         stations.append((key, list(group)))
 
-    print("Extraction des données...")
-    extracted = []
+    print("Traitement des stations...")
     for station_fullname, files in tqdm(stations):
-        station_data = get_station_data(files)
-        extracted.append((station_data, station_fullname))
-
-        break # TODO une seule station
-
-    print("Insertion des données...")
-    with db_connection() as conn:
-        with conn.cursor() as cur:
-            for station_data, station_fullname in tqdm(extracted):
-                insert_into_database(cur, station_data, station_fullname)
+        process_station(station_fullname, files)
 
     print("OK !")
