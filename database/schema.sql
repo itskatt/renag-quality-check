@@ -90,6 +90,9 @@ create table satellite_cs (
     value real not null
 );
 
+------------------------------------------------------------------------------------------------------------------------
+-- Table de skyplot
+
 create table skyplot (
     id bigserial constraint skyplot_pk primary key,
     datetime timestamp not null,
@@ -110,3 +113,30 @@ create table skyplot (
     sig2noise5 smallint not null,
     unique (datetime, station_id, constellation_id, satellite)
 );
+
+------------------------------------------------------------------------------------------------------------------------
+-- Indexes pour accélérer les recherche
+
+create index concurrently "mp1-index"
+on skyplot ((datetime::date), station_id)
+where mp1 != -1;
+
+create index concurrently "mp2-index"
+on skyplot ((datetime::date), station_id)
+where mp2 != -1;
+
+create index concurrently "mp5-index"
+on skyplot ((datetime::date), station_id)
+where mp5 != -1;
+
+create index concurrently "sig2noise1-index"
+on skyplot ((datetime::date), station_id)
+where skyplot.sig2noise1 != -1;
+
+create index concurrently "sig2noise2-index"
+on skyplot ((datetime::date), station_id)
+where skyplot.sig2noise2 != -1;
+
+create index concurrently "sig2noise5-index"
+on skyplot ((datetime::date), station_id)
+where skyplot.sig2noise5 != -1;
