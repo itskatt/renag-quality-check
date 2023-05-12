@@ -196,7 +196,7 @@ def insert(cur, station_id, skyplot_data):
             datetime, station_id, constellation_id,
             satellite, elevation, azimut,
             mp1, mp2, mp5,
-            sig2noise1, sig2noise2, sig2noise3
+            sig2noise1, sig2noise2, sig2noise5
         ) values
         """ + ",".join(to_insert)
     )

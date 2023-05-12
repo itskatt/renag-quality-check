@@ -107,6 +107,6 @@ create table skyplot (
     mp5 smallint not null,
     sig2noise1 smallint not null,
     sig2noise2 smallint not null,
-    sig2noise3 smallint not null,
+    sig2noise5 smallint not null,
     unique (datetime, station_id, constellation_id, satellite)
 );
