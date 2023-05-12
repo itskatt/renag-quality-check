@@ -3,7 +3,9 @@ from functools import partial
 import psycopg
 from psycopg import ClientCursor
 from psycopg.rows import dict_row
+from psycopg.sql import SQL, Identifier
 
+from .metrics import TimeSeries
 
 db_connection = partial(
     psycopg.connect,
@@ -63,3 +65,30 @@ def get_observation_id(cur, observation_type):
         "insert into observation_type (type) values (%s) returning id;",
         (observation_type,)
     )
+
+
+def clear_tables(cur):
+    for metric in TimeSeries:
+        cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
+    cur.execute("delete from skyplot;")
+
+
+def get_latest_date(cur, table_name):
+    date_col = "date"
+    if table_name == "skyplot":
+        date_col = "datetime::date as date"
+
+    cur.execute(f"""--sql
+        select distinct {date_col}
+        from {table_name}
+        order by date desc
+        limit 1;
+    """)
+    res = cur.fetchone()
+
+    if res:
+        latest_date = res["date"]
+    else:
+        latest_date = None
+
+    return latest_date

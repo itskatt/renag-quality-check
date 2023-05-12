@@ -14,14 +14,14 @@ from datetime import date
 from itertools import groupby
 from pathlib import Path
 
-from psycopg.sql import SQL, Identifier
 from tqdm import tqdm
 
-from .database import db_connection, fetch_or_create
+from .database import (clear_tables, db_connection, fetch_or_create,
+                       get_latest_date)
 from .extractors import get_file_date, get_station_id
 from .metrics import (TimeSeries, create_metric_dest, cycle_slip,
                       extract_from_section_header_into,
-                      insert_header_section_metric, skyplot)
+                      common, skyplot)
 
 
 def get_station_data(files):
@@ -116,7 +116,7 @@ def insert_into_database(cur, data, station_fullname):
             cycle_slip.insert_satellite(cur, station_id, time_serie)
 
         else:
-            insert_header_section_metric(cur, station_id, time_serie)
+            common.insert_header_section_metric(cur, station_id, time_serie)
 
     # ensuite le skyplot (pas de boucle comme y'en a un seul)
     skyplot.insert(cur, station_id, data[1])
@@ -171,28 +171,22 @@ def main():
         with conn.cursor() as cur:
 
             if args.override:
-                print("Les series temporelle précédentes vont êtres écrasées.")
-                for metric in TimeSeries:
-                    cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
+                print("Toutes les tables vont êtres ecrasées.")
+                clear_tables(cur)
                 latest_date = None
 
-                print("La table des skyplots va être écrasée.")
-                cur.execute("delete from skyplot;")
-
             else:
-                cur.execute("""--sql
-                    select distinct date
-                    from sig2noise
-                    order by date desc
-                    limit 1;
-                """)
-                res = cur.fetchone()
+                print("Intérogation de la base de données...")
+                dates = [get_latest_date(cur, m.value) for m in TimeSeries]
+                dates.append(get_latest_date(cur, "skyplot"))
 
-                if res:
-                    latest_date = res["date"] # type: ignore
-                    print("Traitement des fichiers produits après le", latest_date, ".")
+                if len(set(dates)) == 1 and dates[0] is not None:
+                    latest_date = dates[0]
+                    print(f"Traitement des fichiers produits après le {latest_date}.")
                 else:
-                    print("La base de données semble vide, nous allons tout envoyer.")
+                    print("La base de données n'est pas consistante, nous allons tout envoyer.")
+                    print("Suppression...")
+                    clear_tables(cur)
                     latest_date = None
 
     all_files = get_all_files(latest_date)
