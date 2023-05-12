@@ -4,9 +4,21 @@
 
 TODO cdc
 
-### Modification des couleurs des courbes
+### Assigner une couleur à une courbe.
 
-TODO
+L'assignation d'une couleur à une courbe se fait en fonction du nom de la courbe : si une nouvelle courbe est ajoutée, il est nécessaire de lui assigner manuelement une nouvelle couleur.
+
+Cela se fait en créant un *override* sur le *dashboard*. Le moyen le plus simple de faire ça consiste à cliquer sur la couleur de la courbe :
+
+![Couleur de la courbe](img/couleur_courbe.png)
+
+Un menu s'ouvre vous invitant à choisir la couleur de la courbe :
+
+![Menu](img/click_couleur_courbe.png)
+
+Il est possible de rentrer la couleur qu'on veut :
+
+![Color picker](img/click_couleur_custom.png)
 
 ### Administration
 
