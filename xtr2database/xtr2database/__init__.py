@@ -152,12 +152,35 @@ def process_station(station_fullname, station_files):
             insert_into_database(cur, station_data, station_fullname)
 
 
+def process_parallel(stations):
+    raise NotImplementedError("Pas encore utilisable...")
+
+    print("Traitement des stations en paralèlle...")
+    with tqdm(total=len(stations)) as pbar:
+        with PoolExecutor() as executor:
+            futures = [executor.submit(process_station, name, files) for name, files in stations]
+            for _ in as_completed(futures):
+                pbar.update(1)
+
+
+def process_sequencial(stations):
+    print("Traitement des stations en séquenciel...")
+    for name, files in tqdm(stations):
+        process_station(name, files)
+
+
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "-o", "--override",
         help="Ecrase toute les données de la table de serie temporelle",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "-p", "--parallel",
+        help="Traite les stations en parallèle",
         action="store_true"
     )
 
@@ -202,11 +225,9 @@ def main():
     for key, group in groupby(all_files, get_station_id):
         stations.append((key, list(str(f.resolve()) for f in group)))
 
-    print("Traitement des stations en paralèlle...")
-    with tqdm(total=len(stations)) as pbar:
-        with PoolExecutor() as executor:
-            futures = [executor.submit(process_station, name, files) for name, files in stations]
-            for future in as_completed(futures):
-                pbar.update(1)
+    if args.parallel:
+        process_parallel(stations)
+    else:
+        process_sequencial(stations)
 
     print("OK !")
