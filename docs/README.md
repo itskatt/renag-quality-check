@@ -31,9 +31,12 @@ TODO
 
 TODO xtr2database <!-- attendre que l'interface CLI soit definie -->
 
-## Sauvegarde des données
+## Sauvegarde et restauration des données des données
 
-TODO scripts `pg_dump`
+TODO
+
+- scripts *wrapper* `pg_dump` & `pg_restore`
+- 2 bases de données... (bref car section config bdd)
 
 ## Déployement sur une nouvelle machine
 
@@ -59,7 +62,7 @@ Installez la version 9.5 de Grafana : https://grafana.com/grafana/download?platf
 
 ### Configuration de Grafana
 
-TODO documenter le fichier de config
+TODO documenter le fichier de config (voir le docker-compose)
 
 ### Connexion à la base de donnée
 
