@@ -122,13 +122,11 @@ def insert_into_database(cur, data, station_fullname):
     skyplot.insert(cur, station_id, data[1])
 
 
-def get_all_files(after=None):
+def get_all_files(infiles, after=None):
     """
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
     On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
     """
-    infiles = Path(os.environ["XTR_FILES_ROOT"])
-
     if not after:
         after = date.fromtimestamp(0)
 
@@ -170,11 +168,22 @@ def process_sequencial(stations):
 
 
 def get_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser("xtr2database")
+
+    parser.add_argument(
+        "xtr_files",
+        help="Sources des fichiers xtr à traiter",
+        type=Path
+    )
+
+    parser.add_argument(
+        "network",
+        help="Le réseau de station dont proviennent les fichiers"
+    )
 
     parser.add_argument(
         "-o", "--override",
-        help="Ecrase toute les données de la table de serie temporelle",
+        help="Ecrase toute les données de cette station",
         action="store_true"
     )
 
@@ -212,7 +221,7 @@ def main():
                     clear_tables(cur)
                     latest_date = None
 
-    all_files = get_all_files(latest_date)
+    all_files = get_all_files(args.xtr_files, latest_date)
 
     nb_files = len(all_files)
     print(nb_files, "fichiers vont être traitées.")
