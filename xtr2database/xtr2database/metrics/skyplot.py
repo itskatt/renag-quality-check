@@ -161,7 +161,7 @@ def insert(cur, station_id, skyplot_data):
 
             # Pour chaque "lignes" de coordonées
             for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
-                
+
                 # On joint les coordonées ensemble (ele, azi)
                 for i_coord, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
                     if ele is None:
@@ -170,9 +170,7 @@ def insert(cur, station_id, skyplot_data):
                     satellite_number = i_coord + 1
 
                     # On peut enfin insèrer la rangée !
-                    row = cur.mogrify(
-                        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                        (
+                    row = "\t".join(map(str, (
                             datetime, station_id, constellation_id,
                             satellite_number, ele, azi,
 
@@ -185,18 +183,17 @@ def insert(cur, station_id, skyplot_data):
                             _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data),
                             _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data),
                             _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data),
-                        )
-                    )
+                    )))
 
                     to_insert.append(row)
-    
-    cur.execute(
+
+    with cur.copy(
         """--sql
-        insert into skyplot (
+        copy skyplot (
             datetime, station_id, constellation_id,
             satellite, elevation, azimut,
             mp1, mp2, mp5,
             sig2noise1, sig2noise2, sig2noise5
-        ) values
-        """ + ",".join(to_insert)
-    )
+        ) from stdin
+        """) as copy:
+            copy.write("\n".join(to_insert))
