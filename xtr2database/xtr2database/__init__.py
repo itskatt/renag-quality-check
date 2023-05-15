@@ -96,10 +96,11 @@ def get_station_data(files):
     )
 
 
-def insert_into_database(cur, data, station_fullname):
+def insert_into_database(cur, data, station_fullname, station_network):
     """
     Insère toute les données d'une station dans la base de données.
     """
+    # récupération de la station
     station_id = fetch_or_create(
         cur, station_fullname,
         "select id from station where fullname = %s;",
@@ -108,6 +109,29 @@ def insert_into_database(cur, data, station_fullname):
         (station_fullname[:4], station_fullname)
     )
 
+    # lien avec le réseau
+    network_id = fetch_or_create(
+        cur, station_network,
+        "select id from network where name = %s;",
+
+        "insert into network (name) values (%s) returning id;",
+        (station_network,)
+    )
+
+    cur.execute(
+        f"""--sql
+        select count(*)
+        from station_network
+        where station_id = {station_id} and network_id = {network_id};
+        """
+    )
+    res = cur.fetchone()
+
+    # Si la station ne fait pas partie du réseau, on la relie
+    if res["count"] == 0:
+        cur.execute(f"insert into station_network (station_id, network_id) values ({station_id}, {network_id});")
+
+    # Insertion des données de la station
     for time_serie in data[0]: # en premier les séries temporelles
         if time_serie["type"] == TimeSeries.OBSERVATION_CS.value:
             cycle_slip.insert_observation(cur, station_id, time_serie)
@@ -137,7 +161,7 @@ def get_all_files(infiles, after=None):
     return flattened
 
 
-def process_station(station_fullname, station_files):
+def process_station(station_fullname, station_files, station_network):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
@@ -147,7 +171,7 @@ def process_station(station_fullname, station_files):
     # TODO réutiliser les connections ?
     with db_connection() as conn:
         with conn.cursor() as cur:
-            insert_into_database(cur, station_data, station_fullname)
+            insert_into_database(cur, station_data, station_fullname, station_network)
 
 
 def process_parallel(stations):
@@ -156,15 +180,16 @@ def process_parallel(stations):
     print("Traitement des stations en paralèlle...")
     with tqdm(total=len(stations)) as pbar:
         with PoolExecutor() as executor:
+            # NOTE : ne pas oublier de mettre a jour en fonction de la signature de process_station
             futures = [executor.submit(process_station, name, files) for name, files in stations]
             for _ in as_completed(futures):
                 pbar.update(1)
 
 
-def process_sequencial(stations):
+def process_sequencial(stations, network):
     print("Traitement des stations en séquenciel...")
     for name, files in tqdm(stations):
-        process_station(name, files)
+        process_station(name, files, network)
 
 
 def get_args():
@@ -237,6 +262,6 @@ def main():
     if args.parallel:
         process_parallel(stations)
     else:
-        process_sequencial(stations)
+        process_sequencial(stations, args.network)
 
     print("OK !")
