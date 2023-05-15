@@ -67,23 +67,36 @@ def get_observation_id(cur, observation_type):
     )
 
 
-def clear_tables(cur):
+def clear_tables(cur, network):
+    where_clause = """
+        where s.station_id in (
+            select station_id
+            from station_network
+            inner join network n on station_network.network_id = n.id
+            where n.name = %s
+        );
+    """
+
     for metric in TimeSeries:
-        cur.execute(SQL("delete from {};").format(Identifier(metric.value)))
-    cur.execute("delete from skyplot;")
+        cur.execute(SQL("delete from {} s" + where_clause).format(Identifier(metric.value)), (network,))
+
+    cur.execute("delete from skyplot s" + where_clause, (network,))
 
 
-def get_latest_date(cur, table_name):
+def get_latest_date(cur, table_name, network):
     date_col = "date"
     if table_name == "skyplot":
         date_col = "datetime::date as date"
 
     cur.execute(f"""--sql
         select distinct {date_col}
-        from {table_name}
+        from {table_name} s
+        inner join station_network sn on s.station_id = sn.station_id
+        inner join network n on n.id = sn.network_id
+        where n.name = %s
         order by date desc
         limit 1;
-    """)
+    """, (network,))
     res = cur.fetchone()
 
     if res:

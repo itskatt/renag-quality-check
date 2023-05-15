@@ -208,7 +208,7 @@ def get_args():
 
     parser.add_argument(
         "-o", "--override",
-        help="Ecrase toute les données de cette station",
+        help="Ecrase toute les données du réseau de station",
         action="store_true"
     )
 
@@ -228,14 +228,14 @@ def main():
         with conn.cursor() as cur:
 
             if args.override:
-                print("Toutes les tables vont êtres ecrasées.")
-                clear_tables(cur)
+                print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
+                clear_tables(cur, args.network)
                 latest_date = None
 
             else:
                 print("Intérogation de la base de données...")
-                dates = [get_latest_date(cur, m.value) for m in TimeSeries]
-                dates.append(get_latest_date(cur, "skyplot"))
+                dates = [get_latest_date(cur, m.value, args.network) for m in TimeSeries]
+                dates.append(get_latest_date(cur, "skyplot", args.network))
 
                 if len(set(dates)) == 1 and dates[0] is not None:
                     latest_date = dates[0]
@@ -243,7 +243,7 @@ def main():
                 else:
                     print("La base de données n'est pas consistante, nous allons tout envoyer.")
                     print("Suppression...")
-                    clear_tables(cur)
+                    clear_tables(cur, args.network)
                     latest_date = None
 
     all_files = get_all_files(args.xtr_files, latest_date)
