@@ -8,6 +8,7 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 import argparse
 import os
 import sys
+import traceback
 from concurrent.futures import ProcessPoolExecutor as PoolExecutor
 from concurrent.futures import as_completed
 from datetime import date
@@ -19,9 +20,8 @@ from tqdm import tqdm
 from .database import (clear_tables, db_connection, fetch_or_create,
                        get_latest_date)
 from .extractors import get_file_date, get_station_id
-from .metrics import (TimeSeries, create_metric_dest, cycle_slip,
-                      extract_from_section_header_into,
-                      common, skyplot)
+from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
+                      extract_from_section_header_into, skyplot)
 
 
 def get_station_data(files):
@@ -77,13 +77,13 @@ def get_station_data(files):
                     parsed_sections += 1
 
                 elif line.startswith("#====== Code multipath"):
-                    extract_from_section_header_into(f, multipath_data, current_date)
-                    skyplot.extract_multipath(f, skyplot_data, current_date)
+                    if extract_from_section_header_into(f, multipath_data, current_date):
+                        skyplot.extract_multipath(f, skyplot_data, current_date)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Signal to noise ratio"):
-                    extract_from_section_header_into(f, sig2noise_data, current_date)
-                    skyplot.extract_sig2noise(f, skyplot_data, current_date)
+                    if extract_from_section_header_into(f, sig2noise_data, current_date):
+                        skyplot.extract_sig2noise(f, skyplot_data, current_date)
                     parsed_sections += 1
 
     return ((
@@ -241,7 +241,7 @@ def main():
                     latest_date = dates[0]
                     print(f"Traitement des fichiers produits après le {latest_date}.")
                 else:
-                    print("La base de données n'est pas consistante, nous allons tout envoyer.")
+                    print("La base de données n'est pas consistante ou bien vide, nous allons tout envoyer.")
                     print("Suppression...")
                     clear_tables(cur, args.network)
                     latest_date = None

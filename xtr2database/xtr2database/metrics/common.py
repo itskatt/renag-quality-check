@@ -24,9 +24,10 @@ def insert_header_section_metric(cur, station_id, metric_data):
         )
         to_insert.append(row)
 
-    # On envoie dans la base de données
-    cur.execute(
-        SQL("insert into {}(date, station_id, constellation_id, observation_type_id, value) values ")
-        .format(Identifier(metric_data["type"])).as_string(cur) +
-        ",".join(to_insert)
-    )
+    # On envoie dans la base de données si il y a des données à envoyer
+    if to_insert:
+        cur.execute(
+            SQL("insert into {}(date, station_id, constellation_id, observation_type_id, value) values ")
+            .format(Identifier(metric_data["type"])).as_string(cur) +
+            ",".join(to_insert)
+        )

@@ -102,7 +102,7 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
     count = defaultdict(list)
     while True:
         splitted = line.split()
-        if splitted[0][-3:] != "CBN":
+        if not splitted or splitted[0][-3:] != "CBN":
             break
 
         # nSatell

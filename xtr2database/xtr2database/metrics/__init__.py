@@ -59,3 +59,4 @@ def extract_from_section_header_into(f, dest, current_date):
         data["observation_type"].append(band[-2:]) # 2 derniers caractères
         data["value"].append(value)
 
+    return bool(extracted)
