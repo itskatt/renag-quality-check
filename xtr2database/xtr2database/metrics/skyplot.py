@@ -187,13 +187,43 @@ def insert(cur, station_id, skyplot_data):
 
                     to_insert.append(row)
 
-    with cur.copy(
-        """--sql
-        copy skyplot (
-            datetime, station_id, constellation_id,
-            satellite, elevation, azimut,
-            mp1, mp2, mp5,
-            sig2noise1, sig2noise2, sig2noise5
-        ) from stdin
-        """) as copy:
-            copy.write("\n".join(to_insert))
+    with cur.connection.transaction():
+        # On est obligé de passer par une table intermédiaire parce que COPY
+        # ne supporte pas ON CONFLICT
+        cur.execute(
+            """--sql
+            create temp table tmp_skyplot
+            (like skyplot including defaults)
+            on commit drop;
+            """
+        )
+
+        with cur.copy(
+            """--sql
+            copy tmp_skyplot (
+                datetime, station_id, constellation_id,
+                satellite, elevation, azimut,
+                mp1, mp2, mp5,
+                sig2noise1, sig2noise2, sig2noise5
+            ) from stdin
+            """) as copy:
+                copy.write("\n".join(to_insert))
+
+        cur.execute(
+            """--sql
+            insert into skyplot
+            (
+                datetime, station_id, constellation_id,
+                satellite, elevation, azimut,
+                mp1, mp2, mp5,
+                sig2noise1, sig2noise2, sig2noise5
+            )
+            (select 
+                datetime, station_id, constellation_id,
+                satellite, elevation, azimut,
+                mp1, mp2, mp5,
+                sig2noise1, sig2noise2, sig2noise5
+            from tmp_skyplot)
+            on conflict do nothing;
+            """
+        )
