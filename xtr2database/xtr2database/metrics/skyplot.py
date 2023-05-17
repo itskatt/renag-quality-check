@@ -1,7 +1,7 @@
-from collections import defaultdict
 import datetime as dt
+from collections import defaultdict
 
-from ..database import get_constellation_id
+from ..database import fetch_or_create, get_constellation_id
 
 
 def _dd_callback():
@@ -159,6 +159,14 @@ def insert(cur, station_id, skyplot_data):
         constellation_id = get_constellation_id(cur, constel)
 
         for datetime, all_data in constel_data.items():
+            date = datetime.date()
+            date_id = fetch_or_create(
+                cur, date,
+                "select id from skyplot_date where date = %s;",
+
+                "insert into skyplot_date (date) values (%s) returning id;",
+                (date,)
+            )
 
             # Pour chaque "lignes" de coordonées
             for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
@@ -172,7 +180,7 @@ def insert(cur, station_id, skyplot_data):
 
                     # On peut enfin insèrer la rangée !
                     row = "\t".join(map(str, (
-                            datetime, station_id, constellation_id,
+                            datetime, date_id, station_id, constellation_id,
                             satellite_number, ele, azi,
 
                             # Les mp1-5
@@ -202,7 +210,7 @@ def insert(cur, station_id, skyplot_data):
         with cur.copy(
             """--sql
             copy tmp_skyplot (
-                datetime, station_id, constellation_id,
+                datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
                 sig2noise1, sig2noise2, sig2noise5
@@ -215,13 +223,13 @@ def insert(cur, station_id, skyplot_data):
             """--sql
             insert into skyplot
             (
-                datetime, station_id, constellation_id,
+                datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
                 sig2noise1, sig2noise2, sig2noise5
             )
             (select 
-                datetime, station_id, constellation_id,
+                datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
                 sig2noise1, sig2noise2, sig2noise5

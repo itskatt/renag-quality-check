@@ -93,9 +93,17 @@ create table satellite_cs (
 ------------------------------------------------------------------------------------------------------------------------
 -- Table de skyplot
 
+create table skyplot_date (
+    id serial constraint skyplot_date_pk primary key,
+    date date not null
+);
+
 create table skyplot (
     id bigserial constraint skyplot_pk primary key,
     datetime timestamp not null,
+    date_id serial
+        constraint skyplot_date_id_fk references skyplot_date
+        on delete cascade,
     station_id smallserial
         constraint skyplot_station_id_fk references station
         on delete cascade,
@@ -117,26 +125,27 @@ create table skyplot (
 ------------------------------------------------------------------------------------------------------------------------
 -- Indexes pour accélérer les recherche
 
-create index concurrently "mp1-index"
-on skyplot ((datetime::date), station_id)
-where mp1 is not null;
-
-create index concurrently "mp2-index"
-on skyplot ((datetime::date), station_id)
-where mp2 is not null;
-
-create index concurrently "mp5-index"
-on skyplot ((datetime::date), station_id)
-where mp5 is not null;
-
-create index concurrently "sig2noise1-index"
-on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise1 is not null;
-
-create index concurrently "sig2noise2-index"
-on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise2 is not null;
-
-create index concurrently "sig2noise5-index"
-on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise5 is not null;
+-- TODO : remplacer les index comme le schema de la table à changé
+-- create index concurrently "mp1-index"
+-- on skyplot ((datetime::date), station_id)
+-- where mp1 is not null;
+--
+-- create index concurrently "mp2-index"
+-- on skyplot ((datetime::date), station_id)
+-- where mp2 is not null;
+--
+-- create index concurrently "mp5-index"
+-- on skyplot ((datetime::date), station_id)
+-- where mp5 is not null;
+--
+-- create index concurrently "sig2noise1-index"
+-- on skyplot ((datetime::date), station_id)
+-- where skyplot.sig2noise1 is not null;
+--
+-- create index concurrently "sig2noise2-index"
+-- on skyplot ((datetime::date), station_id)
+-- where skyplot.sig2noise2 is not null;
+--
+-- create index concurrently "sig2noise5-index"
+-- on skyplot ((datetime::date), station_id)
+-- where skyplot.sig2noise5 is not null;
