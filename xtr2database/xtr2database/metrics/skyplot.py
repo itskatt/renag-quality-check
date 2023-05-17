@@ -136,17 +136,20 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
         band, backup = _SKYPLOT_METRICS[number][constel]
     except KeyError:
         # Si la constellation n'est pas dans le tableau
-        return None
+        return None, None
 
     to_return = None
+    used_band = None
     try:
         to_return = all_data[metric][band][i_line][i_coord]
+        used_band = band
     except KeyError:
         for key in all_data[metric].keys():
             if key[0] == backup[0]:
                 to_return = all_data[metric][key][i_line][i_coord]
+                used_band = key
 
-    return to_return or None
+    return to_return or None, used_band
 
 
 def insert(cur, station_id, skyplot_data):
@@ -178,20 +181,25 @@ def insert(cur, station_id, skyplot_data):
 
                     satellite_number = i_coord + 1
 
+                    # TODO : intégrer les used_* dans la base de données
+                    mp1, used_mp1 = _get_skyplot_metric(constel, "mp", 1, i_line, i_coord, all_data)
+                    mp2, used_mp2 = _get_skyplot_metric(constel, "mp", 2, i_line, i_coord, all_data)
+                    mp5, used_mp5 = _get_skyplot_metric(constel, "mp", 5, i_line, i_coord, all_data)
+
+                    sig2noise1, used_sig2noise1 = _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data)
+                    sig2noise2, used_sig2noise2 = _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data)
+                    sig2noise5, used_sig2noise5 = _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data)
+
                     # On peut enfin insèrer la rangée !
                     row = "\t".join(map(str, (
                             datetime, date_id, station_id, constellation_id,
                             satellite_number, ele, azi,
 
                             # Les mp1-5
-                            _get_skyplot_metric(constel, "mp", 1, i_line, i_coord, all_data),
-                            _get_skyplot_metric(constel, "mp", 2, i_line, i_coord, all_data),
-                            _get_skyplot_metric(constel, "mp", 5, i_line, i_coord, all_data),
+                            mp1, mp2, mp5,
 
                             # Les sig2noise1-5
-                            _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data),
-                            _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data),
-                            _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data),
+                            sig2noise1, sig2noise2, sig2noise5
                     )))
 
                     to_insert.append(row)
