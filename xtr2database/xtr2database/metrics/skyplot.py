@@ -135,7 +135,7 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
         band, backup = _SKYPLOT_METRICS[number][constel]
     except KeyError:
         # Si la constellation n'est pas dans le tableau
-        return -1
+        return None
 
     to_return = None
     try:
@@ -145,7 +145,7 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
             if key[0] == backup[0]:
                 to_return = all_data[metric][key][i_line][i_coord]
 
-    return to_return or -1
+    return to_return or None
 
 
 def insert(cur, station_id, skyplot_data):
@@ -206,6 +206,7 @@ def insert(cur, station_id, skyplot_data):
                 mp1, mp2, mp5,
                 sig2noise1, sig2noise2, sig2noise5
             ) from stdin
+            with null as 'None'
             """) as copy:
                 copy.write("\n".join(to_insert))
 

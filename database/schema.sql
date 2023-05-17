@@ -105,12 +105,12 @@ create table skyplot (
     satellite smallint not null,
     elevation smallint not null,
     azimut smallint not null,
-    mp1 smallint not null,
-    mp2 smallint not null,
-    mp5 smallint not null,
-    sig2noise1 smallint not null,
-    sig2noise2 smallint not null,
-    sig2noise5 smallint not null,
+    mp1 smallint,
+    mp2 smallint,
+    mp5 smallint,
+    sig2noise1 smallint,
+    sig2noise2 smallint,
+    sig2noise5 smallint,
     unique (datetime, station_id, constellation_id, satellite)
 );
 
@@ -119,24 +119,24 @@ create table skyplot (
 
 create index concurrently "mp1-index"
 on skyplot ((datetime::date), station_id)
-where mp1 != -1;
+where mp1 is not null;
 
 create index concurrently "mp2-index"
 on skyplot ((datetime::date), station_id)
-where mp2 != -1;
+where mp2 is not null;
 
 create index concurrently "mp5-index"
 on skyplot ((datetime::date), station_id)
-where mp5 != -1;
+where mp5 is not null;
 
 create index concurrently "sig2noise1-index"
 on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise1 != -1;
+where skyplot.sig2noise1 is not null;
 
 create index concurrently "sig2noise2-index"
 on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise2 != -1;
+where skyplot.sig2noise2 is not null;
 
 create index concurrently "sig2noise5-index"
 on skyplot ((datetime::date), station_id)
-where skyplot.sig2noise5 != -1;
+where skyplot.sig2noise5 is not null;
