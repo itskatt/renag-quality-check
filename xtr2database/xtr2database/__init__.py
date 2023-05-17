@@ -235,6 +235,102 @@ def get_args():
     return parser.parse_args()
 
 
+def override_insert(cur, args):
+    """
+    Effectue une insertion en écrasant les données existantes.
+    Renvoie la liste de tout les fichiers sans filtre.
+    """
+    print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
+    clear_tables(cur, args.network)
+    return get_all_files(args.xtr_files)
+
+
+def date_insert(cur, args):
+    """
+    Effectue une insertion en se basant sur la date de la dernière insertion.
+    Renvoie la liste de tout les fichiers créés après cette date.
+    """
+    print("Recherche de la date la plus récente...")
+    dates = [get_latest_date(cur, m.value, args.network) for m in TimeSeries]
+    dates.append(get_latest_date(cur, "skyplot", args.network))
+
+    if len(set(dates)) == 1:
+        # La base de données est consistente
+        if dates[0] is not None:
+            # Elle n'est pas vide
+            latest_date = dates[0]
+            print(f"Traitement des fichiers produits après le {latest_date}.")
+
+        else:
+            # Elle semble vide
+            print("La base de données semble vide, nous allons tout envoyer.")
+            clear_tables(cur, args.network)
+            latest_date = None
+
+    else:
+        # La base de données n'est pas consistente
+        print("La base de données n'est pas consistente.")
+        if args.force:
+            latest_date = None
+            print("Suppression de toute les tables...")
+            clear_tables(cur, args.network)
+        else:
+            print("Utilisez l'option --force pour forcer l'insertion.")
+            print("Ou l'option --override pour écraser les données.")
+            sys.exit()
+
+    return get_all_files(args.xtr_files, latest_date)
+
+
+def strict_insert(cur, args):
+    print("Récupération des fichiers insérés dans la base de données...")
+    metric_files = []
+    for metric in TimeSeries:
+        cur.execute(
+            SQL("""--sql
+            select distinct fullname || '-' || date as filename
+            from station
+            inner join {} mp on station.id = mp.station_id
+            inner join station_network sn on station.id = sn.station_id
+            inner join network n on n.id = sn.network_id
+            where n.name = %s;
+            """).format(Identifier(metric.value)),
+            (args.network,)
+        )
+        res = cur.fetchall()
+        metric_files.append([row["filename"] for row in res]) # type: ignore
+
+    # TODO vérifier la vitesse
+    cur.execute(
+        """--sql
+        select distinct fullname || '-' || datetime::date as filename
+        from station
+        inner join skyplot mp on station.id = mp.station_id
+        inner join station_network sn on station.id = sn.station_id
+        inner join network n on n.id = sn.network_id
+        where n.name = %s;
+        """,
+        (args.network,)
+    )
+    res = cur.fetchall()
+    metric_files.append([row["filename"] for row in res]) # type: ignore
+
+    if len(set(len(files) for files in metric_files)) != 1:
+        # Base de données non consistente
+        if args.force:
+            print("Suppression de toute les tables...")
+            clear_tables(cur, args.network)
+        else:
+            print("Utilisez l'option --force pour forcer l'insertion.")
+            print("Ou l'option --override pour écraser les données.")
+            sys.exit()
+    else:
+        # Consistente
+        blacklisted_files = metric_files[0]
+
+    exit()
+
+
 def main():
     args = get_args()
 
@@ -242,90 +338,13 @@ def main():
         with conn.cursor() as cur:
 
             if args.override:
-                print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
-                clear_tables(cur, args.network)
-                latest_date = None
+                all_files = override_insert(cur, args)
 
             elif args.date:
-                print("Recherche de la date la plus récente...")
-                dates = [get_latest_date(cur, m.value, args.network) for m in TimeSeries]
-                dates.append(get_latest_date(cur, "skyplot", args.network))
-
-                if len(set(dates)) == 1:
-                    # La base de données est consistente
-                    if dates[0] is not None:
-                        # Elle n'est pas vide
-                        latest_date = dates[0]
-                        print(f"Traitement des fichiers produits après le {latest_date}.")
-
-                    else:
-                        # Elle semble vide
-                        print("La base de données semble vide, nous allons tout envoyer.")
-                        clear_tables(cur, args.network)
-                        latest_date = None
-
-                else:
-                    # La base de données n'est pas consistente
-                    print("La base de données n'est pas consistente.")
-                    if args.force:
-                        latest_date = None
-                        print("Suppression de toute les tables...")
-                        clear_tables(cur, args.network)
-                    else:
-                        print("Utilisez l'option --force pour forcer l'insertion.")
-                        print("Ou l'option --override pour écraser les données.")
-                        sys.exit()
+                all_files = date_insert(cur, args)
 
             else:
-                print("Récupération des fichiers insérés dans la base de données...")
-                metric_files = []
-                for metric in TimeSeries:
-                    cur.execute(
-                        SQL("""--sql
-                        select distinct fullname || '-' || date as filename
-                        from station
-                        inner join {} mp on station.id = mp.station_id
-                        inner join station_network sn on station.id = sn.station_id
-                        inner join network n on n.id = sn.network_id
-                        where n.name = %s;
-                        """).format(Identifier(metric.value)),
-                        (args.network,)
-                    )
-                    res = cur.fetchall()
-                    metric_files.append([row["filename"] for row in res]) # type: ignore
-
-                # TODO vérifier la vitesse
-                cur.execute(
-                    """--sql
-                    select distinct fullname || '-' || datetime::date as filename
-                    from station
-                    inner join skyplot mp on station.id = mp.station_id
-                    inner join station_network sn on station.id = sn.station_id
-                    inner join network n on n.id = sn.network_id
-                    where n.name = %s;
-                    """,
-                    (args.network,)
-                )
-                res = cur.fetchall()
-                metric_files.append([row["filename"] for row in res]) # type: ignore
-
-                if len(set(len(files) for files in metric_files)) != 1:
-                    # Base de données non consistente
-                    if args.force:
-                        print("Suppression de toute les tables...")
-                        clear_tables(cur, args.network)
-                    else:
-                        print("Utilisez l'option --force pour forcer l'insertion.")
-                        print("Ou l'option --override pour écraser les données.")
-                        sys.exit()
-                else:
-                    # Consistente
-                    blacklisted_files = metric_files[0]
-
-                exit()
-
-
-    all_files = get_all_files(args.xtr_files, latest_date)
+                all_files = strict_insert(cur, args)
 
     nb_files = len(all_files)
     print(nb_files, "fichiers vont être traitées.")
