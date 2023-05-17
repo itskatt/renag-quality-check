@@ -1,7 +1,8 @@
 import datetime as dt
 from collections import defaultdict
 
-from ..database import fetch_or_create, get_constellation_id
+from ..database import (fetch_or_create, get_constellation_id,
+                        get_observation_id)
 
 
 def _dd_callback():
@@ -149,7 +150,7 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
                 to_return = all_data[metric][key][i_line][i_coord]
                 used_band = key
 
-    return to_return or None, used_band
+    return to_return, used_band
 
 
 def insert(cur, station_id, skyplot_data):
@@ -171,6 +172,8 @@ def insert(cur, station_id, skyplot_data):
                 (date,)
             )
 
+            used_already_inserted = False
+
             # Pour chaque "lignes" de coordonées
             for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
 
@@ -181,7 +184,6 @@ def insert(cur, station_id, skyplot_data):
 
                     satellite_number = i_coord + 1
 
-                    # TODO : intégrer les used_* dans la base de données
                     mp1, used_mp1 = _get_skyplot_metric(constel, "mp", 1, i_line, i_coord, all_data)
                     mp2, used_mp2 = _get_skyplot_metric(constel, "mp", 2, i_line, i_coord, all_data)
                     mp5, used_mp5 = _get_skyplot_metric(constel, "mp", 5, i_line, i_coord, all_data)
@@ -189,6 +191,36 @@ def insert(cur, station_id, skyplot_data):
                     sig2noise1, used_sig2noise1 = _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data)
                     sig2noise2, used_sig2noise2 = _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data)
                     sig2noise5, used_sig2noise5 = _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data)
+
+                    # insertion des used_* dans la bdd si ils n'y sont pas
+                    if not used_already_inserted:
+                        cur.execute(
+                            """--sql
+                            insert into skyplot_used_band
+                                (
+                                    date_id, station_id, constellation_id,
+                                    mp1_observation_type_id,
+                                    mp2_observation_type_id,
+                                    mp5_observation_type_id,
+                                    sig2noise1_observation_type_id,
+                                    sig2noise2_observation_type_id,
+                                    sig2noise5_observation_type_id
+                                )
+                            values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            on conflict do nothing;
+                            """,
+                            (
+                                date_id, station_id, constellation_id,
+                                get_observation_id(cur, used_mp1),
+                                get_observation_id(cur, used_mp2),
+                                get_observation_id(cur, used_mp5),
+                                get_observation_id(cur, used_sig2noise1),
+                                get_observation_id(cur, used_sig2noise2),
+                                get_observation_id(cur, used_sig2noise5),
+                            )
+                        )
+
+                        used_already_inserted = True
 
                     # On peut enfin insèrer la rangée !
                     row = "\t".join(map(str, (
