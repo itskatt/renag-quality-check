@@ -4,7 +4,7 @@ from collections import defaultdict
 
 class TimeSeries(Enum):
     """
-    Toutes les métriques disponibles.
+    Toutes les séries temporelles disponibles.
     """
     SIG2NOISE = "sig2noise"
     MULTIPATH = "multipath"
@@ -48,7 +48,7 @@ def extract_from_section_header_into(f, dest, current_date):
         extracted.append((band, mean))
 
         line = next(f)
-    
+
     # Mise en forme tabulaire
     data = dest["data"]
     for band, value in extracted:
