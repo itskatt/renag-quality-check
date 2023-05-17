@@ -14,7 +14,7 @@ create table network (
 
 create table observation_type (
     id smallserial constraint observation_type_pk primary key,
-    type varchar(3) not null
+    type varchar(3)
 );
 
 create table station (
