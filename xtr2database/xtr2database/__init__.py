@@ -8,7 +8,6 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 import argparse
 import os
 import sys
-import traceback
 from concurrent.futures import ProcessPoolExecutor as PoolExecutor
 from concurrent.futures import as_completed
 from datetime import date
@@ -206,9 +205,23 @@ def get_args():
         help="Le réseau de station dont proviennent les fichiers"
     )
 
-    parser.add_argument(
+    update_mode = parser.add_mutually_exclusive_group()
+
+    update_mode.add_argument(
+        "-d", "--date",
+        help="Met à jour les données de la station en se basant sur la date",
+        action="store_true"
+    )
+
+    update_mode.add_argument(
         "-o", "--override",
-        help="Ecrase toute les données du réseau de station",
+        help="Ecrase toute les données du réseau de station avant de les insérer",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "-f", "--force",
+        help="Force l'insertion des données, quitte à supprimer celles qui gènes",
         action="store_true"
     )
 
@@ -232,19 +245,39 @@ def main():
                 clear_tables(cur, args.network)
                 latest_date = None
 
-            else:
-                print("Intérogation de la base de données...")
+            elif args.date:
+                print("Recherche de la date la plus récente...")
                 dates = [get_latest_date(cur, m.value, args.network) for m in TimeSeries]
                 dates.append(get_latest_date(cur, "skyplot", args.network))
 
-                if len(set(dates)) == 1 and dates[0] is not None:
-                    latest_date = dates[0]
-                    print(f"Traitement des fichiers produits après le {latest_date}.")
+                if len(set(dates)) == 1:
+                    # La base de données est consistente
+                    if dates[0] is not None:
+                        # Elle n'est pas vide
+                        latest_date = dates[0]
+                        print(f"Traitement des fichiers produits après le {latest_date}.")
+
+                    else:
+                        # Elle semble vide
+                        print("La base de données semble vide, nous allons tout envoyer.")
+                        clear_tables(cur, args.network)
+                        latest_date = None
+
                 else:
-                    print("La base de données n'est pas consistante ou bien vide, nous allons tout envoyer.")
-                    print("Suppression...")
-                    clear_tables(cur, args.network)
-                    latest_date = None
+                    # La base de données n'est pas consistente
+                    print("La base de données n'est pas consistente.")
+                    if args.force:
+                        latest_date = None
+                        print("Suppression de toute les tables...")
+                        clear_tables(cur, args.network)
+                    else:
+                        print("Utilisez l'option --force pour forcer l'insertion.")
+                        print("Ou l'option --override pour écraser les données.")
+                        sys.exit()
+
+            else:
+                print("Mode strict (pas encore implémenté)")
+                exit()
 
     all_files = get_all_files(args.xtr_files, latest_date)
 
