@@ -14,6 +14,7 @@ from datetime import date
 from itertools import groupby
 from pathlib import Path
 
+from psycopg.sql import SQL, Identifier
 from tqdm import tqdm
 
 from .database import (clear_tables, db_connection, fetch_or_create,
@@ -276,9 +277,53 @@ def main():
                         sys.exit()
 
             else:
-                print("Mode strict (pas encore implémenté)")
-                print("Utilisez -f ou -o pour l'insertion")
+                print("Récupération des fichiers insérés dans la base de données...")
+                metric_files = []
+                for metric in TimeSeries:
+                    cur.execute(
+                        SQL("""--sql
+                        select distinct fullname || '-' || date as filename
+                        from station
+                        inner join {} mp on station.id = mp.station_id
+                        inner join station_network sn on station.id = sn.station_id
+                        inner join network n on n.id = sn.network_id
+                        where n.name = %s;
+                        """).format(Identifier(metric.value)),
+                        (args.network,)
+                    )
+                    res = cur.fetchall()
+                    metric_files.append([row["filename"] for row in res]) # type: ignore
+
+                # TODO vérifier la vitesse
+                cur.execute(
+                    """--sql
+                    select distinct fullname || '-' || datetime::date as filename
+                    from station
+                    inner join skyplot mp on station.id = mp.station_id
+                    inner join station_network sn on station.id = sn.station_id
+                    inner join network n on n.id = sn.network_id
+                    where n.name = %s;
+                    """,
+                    (args.network,)
+                )
+                res = cur.fetchall()
+                metric_files.append([row["filename"] for row in res]) # type: ignore
+
+                if len(set(len(files) for files in metric_files)) != 1:
+                    # Base de données non consistente
+                    if args.force:
+                        print("Suppression de toute les tables...")
+                        clear_tables(cur, args.network)
+                    else:
+                        print("Utilisez l'option --force pour forcer l'insertion.")
+                        print("Ou l'option --override pour écraser les données.")
+                        sys.exit()
+                else:
+                    # Consistente
+                    blacklisted_files = metric_files[0]
+
                 exit()
+
 
     all_files = get_all_files(args.xtr_files, latest_date)
 
