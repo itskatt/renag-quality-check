@@ -95,7 +95,8 @@ create table satellite_cs (
 
 create table skyplot_date (
     id serial constraint skyplot_date_pk primary key,
-    date date not null
+    date date not null,
+    unique (date)
 );
 
 create table skyplot_used_band (
@@ -122,7 +123,8 @@ create table skyplot_used_band (
         on delete cascade,
     sig2noise5_observation_type_id smallserial
         constraint sig2noise5_skyplot_used_band_observation_type_id_fk references observation_type
-        on delete cascade
+        on delete cascade,
+    unique (date_id, constellation_id)
 );
 
 create table skyplot (
