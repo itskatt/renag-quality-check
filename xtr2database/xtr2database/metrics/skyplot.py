@@ -192,7 +192,7 @@ def insert(cur, station_id, skyplot_data):
         # ne supporte pas ON CONFLICT
         cur.execute(
             """--sql
-            create temp table tmp_skyplot
+            create temporary table tmp_skyplot
             (like skyplot including defaults)
             on commit drop;
             """
