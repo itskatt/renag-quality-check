@@ -222,7 +222,7 @@ def get_args():
 
     parser.add_argument(
         "-f", "--force",
-        help="Force l'insertion des données, quitte à supprimer celles qui gènes",
+        help="Supprime les données existantes avant l'insertion si la base de données est inconsistente",
         action="store_true"
     )
 
@@ -317,9 +317,11 @@ def strict_insert(cur, args):
 
     if len(set(len(files) for files in metric_files)) != 1:
         # Base de données non consistente
+        print("La base de données n'est pas consistente.")
         if args.force:
             print("Suppression de toute les tables...")
             clear_tables(cur, args.network)
+            blacklisted_files = []
         else:
             print("Utilisez l'option --force pour forcer l'insertion.")
             print("Ou l'option --override pour écraser les données.")
@@ -327,8 +329,9 @@ def strict_insert(cur, args):
     else:
         # Consistente
         blacklisted_files = metric_files[0]
+        print(f"{len(blacklisted_files)} fichiers trouvés.")
 
-    exit()
+    return [file for file in get_all_files(args.xtr_files) if file.stem not in blacklisted_files]
 
 
 def main():
