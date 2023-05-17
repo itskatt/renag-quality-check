@@ -103,6 +103,9 @@ create table skyplot_used_band (
     id serial constraint skyplot_used_band_pk primary key,
     date_id serial
         constraint skyplot_date_id_fk references skyplot_date,
+    station_id smallserial
+        constraint satellite_cs_station_id_fk references station
+        on delete cascade,
     constellation_id smallserial
         constraint skyplot_constellation_id_fk references constellation
         on delete cascade,
@@ -124,7 +127,7 @@ create table skyplot_used_band (
     sig2noise5_observation_type_id smallserial
         constraint sig2noise5_skyplot_used_band_observation_type_id_fk references observation_type
         on delete cascade,
-    unique (date_id, constellation_id)
+    unique (date_id, station_id, constellation_id)
 );
 
 create table skyplot (
