@@ -8,7 +8,7 @@ from ..database import (fetch_or_create, get_constellation_id,
 def _dd_callback():
     """
     Contruit la partie qui acceuil l'évélation, l'azimut ainsi que les multipath et
-    le sig23noise en fonction des bandes.
+    le sig2noise en fonction des bandes.
     """
     return {
         "ELE": [],
