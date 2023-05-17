@@ -98,6 +98,33 @@ create table skyplot_date (
     date date not null
 );
 
+create table skyplot_used_band (
+    id serial constraint skyplot_used_band_pk primary key,
+    date_id serial
+        constraint skyplot_date_id_fk references skyplot_date,
+    constellation_id smallserial
+        constraint skyplot_constellation_id_fk references constellation
+        on delete cascade,
+    mp1_observation_type_id smallserial
+        constraint mp1_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade,
+    mp2_observation_type_id smallserial
+        constraint mp2_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade,
+    mp5_observation_type_id smallserial
+        constraint mp5_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade,
+    sig2noise1_observation_type_id smallserial
+        constraint sig2noise1_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade,
+    sig2noise2_observation_type_id smallserial
+        constraint sig2noise2_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade,
+    sig2noise5_observation_type_id smallserial
+        constraint sig2noise5_skyplot_used_band_observation_type_id_fk references observation_type
+        on delete cascade
+);
+
 create table skyplot (
     id bigserial constraint skyplot_pk primary key,
     datetime timestamp not null,
