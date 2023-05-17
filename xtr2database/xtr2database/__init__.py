@@ -283,6 +283,10 @@ def date_insert(cur, args):
 
 
 def strict_insert(cur, args):
+    """
+    Effectue une insertion en se basant sur les fichiers déjà insérés.
+    Renvoie la liste de tout les fichiers qui ne sont pas déjà insérés.
+    """
     print("Récupération des fichiers insérés dans la base de données...")
     metric_files = []
     for metric in TimeSeries:
