@@ -102,8 +102,7 @@ create table skyplot (
     id bigserial constraint skyplot_pk primary key,
     datetime timestamp not null,
     date_id serial
-        constraint skyplot_date_id_fk references skyplot_date
-        on delete cascade,
+        constraint skyplot_date_id_fk references skyplot_date,
     station_id smallserial
         constraint skyplot_station_id_fk references station
         on delete cascade,
