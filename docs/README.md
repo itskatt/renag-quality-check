@@ -64,6 +64,11 @@ Installez la version 9.5 de Grafana : https://grafana.com/grafana/download?platf
 
 TODO documenter le fichier de config (voir le docker-compose)
 
+### Plugins
+
+- nline-plotlyjs-panel
+- marcusolsson-dynamictext-panel
+
 ### Connexion à la base de donnée
 
 TODO grafana <-> bdd avec bon utilisateur
