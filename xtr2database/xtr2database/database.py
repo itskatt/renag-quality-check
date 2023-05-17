@@ -50,7 +50,7 @@ def get_constellation_id(cur, constellation_shortname):
         "select id from constellation where shortname = %s;",
 
         "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
-        ("??", constellation_shortname)
+        (constellation_shortname, constellation_shortname)
     )
 
 

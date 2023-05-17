@@ -277,6 +277,7 @@ def main():
 
             else:
                 print("Mode strict (pas encore implémenté)")
+                print("Utilisez -f ou -o pour l'insertion")
                 exit()
 
     all_files = get_all_files(args.xtr_files, latest_date)
