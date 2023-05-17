@@ -153,6 +153,9 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
     return to_return, used_band
 
 
+_already_inserted_obs_types = set()
+
+
 def insert(cur, station_id, skyplot_data):
     """
     Insère les données du skyplot dans la base de données.
@@ -171,8 +174,6 @@ def insert(cur, station_id, skyplot_data):
                 "insert into skyplot_date (date) values (%s) returning id;",
                 (date,)
             )
-
-            used_already_inserted = False
 
             # Pour chaque "lignes" de coordonées
             for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
@@ -193,7 +194,7 @@ def insert(cur, station_id, skyplot_data):
                     sig2noise5, used_sig2noise5 = _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data)
 
                     # insertion des used_* dans la bdd si ils n'y sont pas
-                    if not used_already_inserted:
+                    if (date_id, station_id, constellation_id) not in _already_inserted_obs_types:
                         cur.execute(
                             """--sql
                             insert into skyplot_used_band
@@ -220,7 +221,7 @@ def insert(cur, station_id, skyplot_data):
                             )
                         )
 
-                        used_already_inserted = True
+                        _already_inserted_obs_types.add((date_id, station_id, constellation_id))
 
                     # On peut enfin insèrer la rangée !
                     row = "\t".join(map(str, (
