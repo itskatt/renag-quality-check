@@ -8,8 +8,6 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 import argparse
 import os
 import sys
-from concurrent.futures import ProcessPoolExecutor as PoolExecutor
-from concurrent.futures import as_completed
 from datetime import date
 from itertools import groupby
 from pathlib import Path
@@ -174,18 +172,6 @@ def process_station(station_fullname, station_files, station_network):
             insert_into_database(cur, station_data, station_fullname, station_network)
 
 
-def process_parallel(stations):
-    raise NotImplementedError("Pas encore utilisable...")
-
-    print("Traitement des stations en paralèlle...")
-    with tqdm(total=len(stations)) as pbar:
-        with PoolExecutor() as executor:
-            # NOTE : ne pas oublier de mettre a jour en fonction de la signature de process_station
-            futures = [executor.submit(process_station, name, files) for name, files in stations]
-            for _ in as_completed(futures):
-                pbar.update(1)
-
-
 def process_sequencial(stations, network):
     print("Traitement des stations en séquenciel...")
     for name, files in tqdm(stations):
@@ -223,12 +209,6 @@ def get_args():
     parser.add_argument(
         "-f", "--force",
         help="Supprime les données existantes avant l'insertion si la base de données est inconsistente",
-        action="store_true"
-    )
-
-    parser.add_argument(
-        "-p", "--parallel",
-        help="Traite les stations en parallèle",
         action="store_true"
     )
 
@@ -364,9 +344,6 @@ def main():
     for key, group in groupby(all_files, get_station_id):
         stations.append((key, list(str(f.resolve()) for f in group)))
 
-    if args.parallel:
-        process_parallel(stations)
-    else:
-        process_sequencial(stations, args.network)
+    process_sequencial(stations, args.network)
 
     print("OK !")
