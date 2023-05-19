@@ -155,31 +155,3 @@ create table skyplot (
     cs5 boolean not null default false,
     unique (datetime, station_id, constellation_id, satellite)
 );
-
-------------------------------------------------------------------------------------------------------------------------
--- Indexes pour accélérer les recherche
-
--- TODO : remplacer les index comme le schema de la table à changé
--- create index concurrently "mp1-index"
--- on skyplot ((datetime::date), station_id)
--- where mp1 is not null;
---
--- create index concurrently "mp2-index"
--- on skyplot ((datetime::date), station_id)
--- where mp2 is not null;
---
--- create index concurrently "mp5-index"
--- on skyplot ((datetime::date), station_id)
--- where mp5 is not null;
---
--- create index concurrently "sig2noise1-index"
--- on skyplot ((datetime::date), station_id)
--- where skyplot.sig2noise1 is not null;
---
--- create index concurrently "sig2noise2-index"
--- on skyplot ((datetime::date), station_id)
--- where skyplot.sig2noise2 is not null;
---
--- create index concurrently "sig2noise5-index"
--- on skyplot ((datetime::date), station_id)
--- where skyplot.sig2noise5 is not null;
