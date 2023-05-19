@@ -69,7 +69,7 @@ def get_station_data(files):
                     parsed_sections += 1
 
                 elif line.startswith("#====== Preprocessing results"):
-                    cycle_slip.extract_from_prepro_res(f, satellite_cs, nb_constell)
+                    cycle_slip.extract_from_prepro_res(f, satellite_cs, skyplot_data, nb_constell, current_date)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Elevation & Azimuth"):

@@ -150,6 +150,9 @@ create table skyplot (
     sig2noise1 smallint,
     sig2noise2 smallint,
     sig2noise5 smallint,
+    cs1 boolean not null default false,
+    cs2 boolean not null default false,
+    cs5 boolean not null default false,
     unique (datetime, station_id, constellation_id, satellite)
 );
 

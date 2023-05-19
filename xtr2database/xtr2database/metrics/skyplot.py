@@ -15,7 +15,9 @@ def _dd_callback():
         "AZI": [],
         #     toute les bandes
         "mp": {},
-        "sig2noise": {}
+        "sig2noise": {},
+        # si ça a cs
+        "cs": {}
     }
 
 
@@ -223,6 +225,13 @@ def insert(cur, station_id, skyplot_data):
 
                         _already_inserted_obs_types.add((date_id, station_id, constellation_id))
 
+                    # On determine si ça a cycle slip
+                    cs_bands = all_data["cs"].get(satellite_number, [])
+
+                    cs1 = used_mp1 in cs_bands
+                    cs2 = used_mp2 in cs_bands
+                    cs5 = used_mp5 in cs_bands
+
                     # On peut enfin insèrer la rangée !
                     row = "\t".join(map(str, (
                             datetime, date_id, station_id, constellation_id,
@@ -232,7 +241,10 @@ def insert(cur, station_id, skyplot_data):
                             mp1, mp2, mp5,
 
                             # Les sig2noise1-5
-                            sig2noise1, sig2noise2, sig2noise5
+                            sig2noise1, sig2noise2, sig2noise5,
+
+                            # Si ça a cycle slip
+                            cs1, cs2, cs5
                     )))
 
                     to_insert.append(row)
@@ -254,7 +266,8 @@ def insert(cur, station_id, skyplot_data):
                 datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
-                sig2noise1, sig2noise2, sig2noise5
+                sig2noise1, sig2noise2, sig2noise5,
+                cs1, cs2, cs5
             ) from stdin
             with null as 'None'
             """) as copy:
@@ -267,13 +280,15 @@ def insert(cur, station_id, skyplot_data):
                 datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
-                sig2noise1, sig2noise2, sig2noise5
+                sig2noise1, sig2noise2, sig2noise5,
+                cs1, cs2, cs5
             )
             (select 
                 datetime, date_id, station_id, constellation_id,
                 satellite, elevation, azimut,
                 mp1, mp2, mp5,
-                sig2noise1, sig2noise2, sig2noise5
+                sig2noise1, sig2noise2, sig2noise5,
+                cs1, cs2, cs5
             from tmp_skyplot)
             on conflict do nothing;
             """

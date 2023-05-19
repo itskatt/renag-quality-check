@@ -1,5 +1,6 @@
 from collections import defaultdict
 from statistics import fmean
+import datetime as dt
 
 from psycopg.sql import SQL, Identifier
 
@@ -68,19 +69,34 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
     return len(extracted)
 
 
-def extract_from_prepro_res(f, satellite_dest, nb_constell):
+def extract_from_prepro_res(f, satellite_dest, skyplot_dest, nb_constell, current_date):
     """
     Extraits des données de la section "Preprocessing results" utilisé pour les
-    calculs du satellite cs.
+    calculs du satellite_cs ainsi que le tracage des skyplot de cycle slip.
     """
     line = next(f)
     while not line.startswith("#GNSSLP"):
         line = next(f)
+
+    # Ici on récupère les bandes dans l'entête de section
+    bands = [b[1:] for b in line.split()[4:]]
+
+    # On rentre dans la partie interessante
     line = next(f)
 
     count = defaultdict(int)
     while line != "\n": # NOTE : ici on arrive juste avant la section "Elevation & Azimuth"
-        count[line[1:4]] += 1
+        splitted = line.split()
+
+        constel = line[1:4]
+        time = dt.time.fromisoformat(splitted[2])
+        datetime = dt.datetime.combine(current_date, time)
+        sat_number = int(splitted[3][1:])
+        cs_bands = [bands[i] for i, b in enumerate(splitted[4:]) if b != "-"]
+
+        skyplot_dest[constel][datetime]["cs"][sat_number] = cs_bands
+
+        count[constel] += 1
         line = next(f)
 
     sat_data = satellite_dest["data"]
