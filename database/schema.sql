@@ -36,6 +36,18 @@ create table station_network (
 );
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Table pour accélérer la découverte des fichiers déjà insérés
+
+create table inserted_file (
+    id serial constraint inserted_file_pk primary key,
+    name varchar(20) not null,
+    station_id smallint
+        constraint inserted_file_station_id_fk references station
+        on delete cascade,
+    unique (name)
+);
+
+------------------------------------------------------------------------------------------------------------------------
 -- Tables de séries temporelles
 
 create table sig2noise (

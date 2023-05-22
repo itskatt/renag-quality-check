@@ -81,6 +81,7 @@ def clear_tables(cur, network):
         cur.execute(SQL("delete from {} s" + where_clause).format(Identifier(metric.value)), (network,))
 
     cur.execute("delete from skyplot s" + where_clause, (network,))
+    cur.execute("delete from inserted_file s" + where_clause, (network,))
 
 
 def get_latest_date(cur, table_name, network):

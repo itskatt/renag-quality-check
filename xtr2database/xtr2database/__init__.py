@@ -12,7 +12,6 @@ from datetime import date
 from itertools import groupby
 from pathlib import Path
 
-from psycopg.sql import SQL, Identifier
 from tqdm import tqdm
 
 from .database import (clear_tables, db_connection, fetch_or_create,
@@ -43,6 +42,8 @@ def get_station_data(files):
     skyplot_data = skyplot.create_dest()
 
     station_coords = (None, None)
+
+    inserted_files = []
 
     # Extraction des informations des fichiers
     for file in files:
@@ -91,6 +92,8 @@ def get_station_data(files):
                         skyplot.extract_sig2noise(f, skyplot_data, current_date)
                     parsed_sections += 1
 
+        inserted_files.append(filename)
+
     return ((
             sig2noise_data,
             multipath_data,
@@ -98,7 +101,8 @@ def get_station_data(files):
             satellite_cs
         ),
         skyplot_data,
-        station_coords
+        station_coords,
+        inserted_files
     )
 
 
@@ -152,6 +156,16 @@ def insert_into_database(cur, data, station_fullname, station_network):
 
     # ensuite le skyplot (pas de boucle comme y'en a un seul)
     skyplot.insert(cur, station_id, data[1])
+
+    # On note les fichiers traités
+    to_insert = ",".join(cur.mogrify("(%s,%s)", (f, station_id)) for f in data[3])
+    cur.execute(
+        f"""--sql
+        insert into inserted_file (name, station_id)
+        values {to_insert}
+        on conflict do nothing;
+        """
+    )
 
 
 def get_all_files(infiles, after=None):
@@ -279,52 +293,21 @@ def strict_insert(cur, args):
     Renvoie la liste de tout les fichiers qui ne sont pas déjà insérés.
     """
     print("Récupération des fichiers insérés dans la base de données...")
-    metric_files = []
-    for metric in TimeSeries:
-        cur.execute(
-            SQL("""--sql
-            select distinct fullname || '-' || date as filename
-            from station
-            inner join {} mp on station.id = mp.station_id
-            inner join station_network sn on station.id = sn.station_id
-            inner join network n on n.id = sn.network_id
-            where n.name = %s;
-            """).format(Identifier(metric.value)),
-            (args.network,)
-        )
-        res = cur.fetchall()
-        metric_files.append([row["filename"] for row in res]) # type: ignore
-
-    # TODO vérifier la vitesse
     cur.execute(
         """--sql
-        select distinct fullname || '-' || datetime::date as filename
-        from station
-        inner join skyplot mp on station.id = mp.station_id
-        inner join station_network sn on station.id = sn.station_id
+        select i.name as name
+        from inserted_file i
+        inner join station s on s.id = i.station_id
+        inner join station_network sn on s.id = sn.station_id
         inner join network n on n.id = sn.network_id
         where n.name = %s;
         """,
         (args.network,)
     )
     res = cur.fetchall()
-    metric_files.append([row["filename"] for row in res]) # type: ignore
 
-    if len(set(len(files) for files in metric_files)) != 1:
-        # Base de données non consistente
-        print("La base de données n'est pas consistente.")
-        if args.force:
-            print("Suppression de toute les tables...")
-            clear_tables(cur, args.network)
-            blacklisted_files = []
-        else:
-            print("Utilisez l'option --force pour forcer l'insertion.")
-            print("Ou l'option --override pour écraser les données.")
-            sys.exit()
-    else:
-        # Consistente
-        blacklisted_files = metric_files[0]
-        print(f"{len(blacklisted_files)} fichiers trouvés.")
+    blacklisted_files = [r["name"] for r in res]
+    print(f"{len(blacklisted_files)} fichiers trouvés.")
 
     return [file for file in get_all_files(args.xtr_files) if file.stem not in blacklisted_files]
 
