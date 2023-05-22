@@ -221,6 +221,7 @@ def override_insert(cur, args):
     Renvoie la liste de tout les fichiers sans filtre.
     """
     print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
+    print("Suppression...")
     clear_tables(cur, args.network)
     return get_all_files(args.xtr_files)
 
