@@ -42,7 +42,7 @@ def get_station_data(files):
 
     skyplot_data = skyplot.create_dest()
 
-    station_coords = ()
+    station_coords = (None, None)
 
     # Extraction des informations des fichiers
     for file in files:
@@ -65,7 +65,7 @@ def get_station_data(files):
                     parsed_sections += 1
 
                 elif line.startswith("#====== Estimated values"):
-                    if not station_coords:
+                    if station_coords[0] is None:
                         station_coords = get_station_coords(f)
                     parsed_sections += 1
 

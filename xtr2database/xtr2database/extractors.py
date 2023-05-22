@@ -23,7 +23,12 @@ def get_station_id(file):
 def get_station_coords(f):
     line = next(f)
 
-    while not line.startswith("=BLHGNS"):
+    while True:
+        if line.startswith("=BLHGNS"):
+            break
+        elif line == "\n": # Pas de BLHGNS
+            return None, None
+
         line = next(f)
 
     splitted = line.split()
