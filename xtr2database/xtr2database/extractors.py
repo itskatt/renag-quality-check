@@ -18,3 +18,17 @@ def get_station_id(file):
     Renvoie l'identifiant d'une station en fonction de son nom de fichier.
     """
     return file.stem.split("-", 1)[0]
+
+
+def get_station_coords(f):
+    line = next(f)
+
+    while not line.startswith("=BLHGNS"):
+        line = next(f)
+
+    splitted = line.split()
+
+    return (
+        float(splitted[3]),
+        float(splitted[4])
+    )

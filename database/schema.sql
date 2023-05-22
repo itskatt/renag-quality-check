@@ -20,7 +20,9 @@ create table observation_type (
 create table station (
     id smallserial constraint station_pk primary key,
     shortname varchar(4) not null,
-    fullname varchar(9) not null
+    fullname varchar(9) not null,
+    lat double precision not null,
+    long double precision not null
 );
 
 create table station_network (

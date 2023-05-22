@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 from .database import (clear_tables, db_connection, fetch_or_create,
                        get_latest_date)
-from .extractors import get_file_date, get_station_id
+from .extractors import get_file_date, get_station_coords, get_station_id
 from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
                       extract_from_section_header_into, skyplot)
 
@@ -42,6 +42,8 @@ def get_station_data(files):
 
     skyplot_data = skyplot.create_dest()
 
+    station_coords = ()
+
     # Extraction des informations des fichiers
     for file in files:
         filename = file.split(".")[-2].rpartition(os.sep)[-1]
@@ -55,11 +57,16 @@ def get_station_data(files):
             # on initialisa a None pour clairement afficher un état illégal
             nb_constell = None
             for line in f:
-                if parsed_sections == 6:
+                if parsed_sections == 7:
                     break
 
                 elif line.startswith("#====== Summary statistics"):
                     nb_constell = cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
+                    parsed_sections += 1
+
+                elif line.startswith("#====== Estimated values"):
+                    if not station_coords:
+                        station_coords = get_station_coords(f)
                     parsed_sections += 1
 
                 elif line.startswith("#====== Band available"):
@@ -90,7 +97,8 @@ def get_station_data(files):
             observation_cs,
             satellite_cs
         ),
-        skyplot_data
+        skyplot_data,
+        station_coords
     )
 
 
@@ -99,12 +107,14 @@ def insert_into_database(cur, data, station_fullname, station_network):
     Insère toute les données d'une station dans la base de données.
     """
     # récupération de la station
+    station_lat, station_long = data[2]
+
     station_id = fetch_or_create(
         cur, station_fullname,
         "select id from station where fullname = %s;",
 
-        "insert into station (shortname, fullname) values (%s , %s) returning id;",
-        (station_fullname[:4], station_fullname)
+        "insert into station (shortname, fullname, lat, long) values (%s , %s, %s, %s) returning id;",
+        (station_fullname[:4], station_fullname, station_lat, station_long)
     )
 
     # lien avec le réseau
