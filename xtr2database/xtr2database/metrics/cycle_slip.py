@@ -1,11 +1,15 @@
 from collections import defaultdict
-from statistics import fmean
 import datetime as dt
 
 from psycopg.sql import SQL, Identifier
 
 from ..database import get_constellation_id
 from . import TimeSeries
+
+try: # Compatibilité python 3.7
+    from statistics import fmean as mean # type: ignore
+except ImportError:
+    from statistics import mean
 
 
 def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
@@ -129,7 +133,7 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
     sat_data = satellite_dest["data"]
     for i in range(satellite_dest["length"] - nb_constell, satellite_dest["length"]):
         constel = sat_data["constellation"][i]
-        sat_data["avg_sat"].append(fmean(count[constel]) if len(count[constel]) > 0 else 1)
+        sat_data["avg_sat"].append(mean(count[constel]) if len(count[constel]) > 0 else 1)
 
 
 def insert_observation(cur, station_id, observation_cs):
