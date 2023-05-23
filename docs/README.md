@@ -34,7 +34,7 @@ Pour pouvoir lire et extraire les données pertinentes à l'affichage des graphi
 ### Instalation du script
 
 <!-- TODO : tester les compatibilité de version -->
-> **NOTE :** Le script requiert la version 3.x de Python minimum pour fonctionner.
+> **NOTE :** Le script requiert la version 3.7 de Python minimum pour fonctionner, idéalement la version 3.11.
 
 Une fois que vous vous êtes déplacé dans le répertoire [xtr2database](../xtr2database/), suivez les étapes suivantes :
 
