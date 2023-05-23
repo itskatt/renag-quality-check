@@ -1,5 +1,5 @@
-from collections import defaultdict
 import datetime as dt
+from collections import defaultdict
 
 from psycopg.sql import SQL, Identifier
 
@@ -7,7 +7,7 @@ from ..database import get_constellation_id
 from . import TimeSeries
 
 try: # Compatibilité python 3.7
-    from statistics import fmean as mean # type: ignore
+    from statistics import fmean as mean  # type: ignore
 except ImportError:
     from statistics import mean
 
