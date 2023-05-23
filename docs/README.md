@@ -61,7 +61,13 @@ Une fois que vous vous êtes déplacé dans le répertoire [xtr2database](../xtr
 Vous pouvez maintenant utiliser le script ! Testez qu'il soit bien installé avec la commande suivante :
 
 ```sh
-python3 -m xtr2database --help
+xtr2database --help
+```
+
+Si cela ne marche pas, peut être que le script n'est pas dans votre path. Dans ce cas, il faudrait utiliser :
+
+```sh
+python3 -m xtr2database -h
 ```
 
 ### Utilisation
@@ -69,7 +75,7 @@ python3 -m xtr2database --help
 Une utilisation basique du script s'effectue de la manière suivante :
 
 ```sh
-python3 -m xtr2database <chemin/vers/repertoire> <nom du réseau>
+xtr2database <chemin/vers/repertoire> <nom du réseau>
 ```
 
 Le script va se connecter à la base de données, lire les fichiers xtr dans le répertoire précisé et sauvegarder les données comme faisant partie du réseau donné.
@@ -83,7 +89,7 @@ Il peut arriver que la base de données se retrouve dans un état inconsistant. 
 Par contre, il est possible de forcer l'insertion des données malgré ces inconsistance. Dans ce cas, il est possible d'utiliser l'option `--force` pour tout insérer en partant de zéro. Par exemple, pour insérer de nouvelles données en mode date en forçant l'insertion s'il y a un souci d'inconsistance :
 
 ```sh
-python3 -m xtr2database <chemin> <réseau> --date --force
+xtr2database <chemin> <réseau> --date --force
 ```
 
 Finalement, pour écraser dans tous les cas les données précédentes, il est possible d'utiliser l'option `--override`. Cette option est mutuellement exclusive avec l'option `--date`.
