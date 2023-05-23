@@ -52,10 +52,10 @@ Une fois que vous vous êtes déplacé dans le répertoire [xtr2database](../xtr
     source env/bin/activate
     ```
 
-2. #### Installation des dépendances
+2. #### Installation du script
 
     ```sh
-    python3 -m pip install -r requirements.txt
+    python3 -m pip install -U .
     ```
 
 Vous pouvez maintenant utiliser le script ! Testez qu'il soit bien installé avec la commande suivante :
