@@ -1,0 +1,16 @@
+[project]
+name = "xtr2database"
+description = "Script d'alimentation de la base de données."
+version = "1.0"
+requires-python = ">=3.6"
+dynamic = ["dependencies"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+xtr2database = "xtr2database:main"
