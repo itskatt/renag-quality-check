@@ -159,7 +159,27 @@ Installez la version **9.5** de Grafana : https://grafana.com/grafana/download?p
 
 ### Configuration de Grafana
 
-TODO documenter le fichier de config (voir le docker-compose)
+Une fois que Grafana a été installé, il est nécéssaire de configurer. Pour cela, localisez le [fichier de configuration à utiliser en fonction de votre système](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#configuration-file-location), puis modifiez les valeurs suivantes :
+
+#### Section `server`
+
+- `enable_gzip` = true
+
+#### Section `database`
+
+- `type` = postgres
+- `host` = \<adresse\>:\<port\>
+- `name` = grafana
+- `user` = \<utilisateur\>
+- `password` = \<mdp\>
+
+#### Section `auth.anonymous`
+
+- `enabled` = true
+- `org_name` = Géoazur
+
+
+Il peut être nécéssaire de configurer d'avantage Grafana en fonction de la configuration du serveur (par exemple si Grafana est exposé directement ou si un proxy inverse est utilisé). Pour cela, référez-vous à la documentation officielle : https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/.
 
 ### Plugins
 
