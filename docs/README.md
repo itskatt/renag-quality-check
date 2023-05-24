@@ -96,10 +96,26 @@ Finalement, pour écraser dans tous les cas les données précédentes, il est p
 
 ## Sauvegarde et restauration des données
 
-TODO
+Il est recommandé d'effectuer des sauvegardes régulières des bases de données. Pour cela, un script de sauvegarde des données (`backup.sh`) ainsi qu'un script de restauration des données (`restore.sh`) sont fournis.
 
-- scripts *wrapper* `pg_dump` & `pg_restore`
-- 2 bases de données... (bref car section config bdd)
+Pour que les script fonctionnent, il est nécéssaire d'avoir les utilitaire `pg_dump` et `pg_restore` sur le PATH.
+
+<!-- TODO : username + password -->
+
+Exemple d'utilisation :
+
+```sh
+# Sauvegarde des bases de données
+./backup.sh
+# Cela produit un fichier "backups_2023-05-19_10-15-41.tar.gz"
+
+# Restauration
+# Extraction de l'archive
+tar xzf backups_2023-05-19_10-15-41.tar.gz
+
+# Restauration des données de "quality_check_data_backup" dans la base de données "quality_check_data"
+./restore.sh "quality_check_data_backup" "quality_check_data"
+```
 
 ## Déployement sur une nouvelle machine
 
