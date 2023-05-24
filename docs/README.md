@@ -155,7 +155,7 @@ grant select on all tables in schema public to grafana_reader;
 
 ### Installation de Grafana
 
-Installez la version 9.5 de Grafana : https://grafana.com/grafana/download?platform=linux&edition=oss.
+Installez la version **9.5** de Grafana : https://grafana.com/grafana/download?platform=linux&edition=oss.
 
 ### Configuration de Grafana
 
@@ -163,8 +163,12 @@ TODO documenter le fichier de config (voir le docker-compose)
 
 ### Plugins
 
+Nos visualisation requierent les plugins suivants pour être installé :
+
 - nline-plotlyjs-panel
 - marcusolsson-dynamictext-panel
+
+[Guide sur l'installation des plugins](https://grafana.com/docs/grafana/latest/administration/plugin-management/#install-a-plugin).
 
 ### Connexion à la base de donnée
 
