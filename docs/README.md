@@ -129,11 +129,29 @@ Une version récente (15+) est conseillé, même si cela devrait fonctionner ave
 
 ### Configuration de la base de données
 
-Une fois que la base de donnée est accesible, ...
+Une fois que la base de donnée est accesible, il est nécéssaire de créer deux bases de données :
 
-1. Importer le schéma
+- Une pour Grafana
+- Une pour les données à afficher
 
-2. Créer l'utilisateur pour grafana (uniquement select)
+```sql
+create database grafana;
+create database quality_check_data;
+```
+
+Pour la base de données `quality_check_data`, il est nécéssaire d'ajuster les permissions. En effet, Grafana ne filtre pas les requêtes envoyées à la base de données, il faut donc créer un utilisateur avec un minimum de permissions.
+
+Une fois connecté à la bonne base de données :
+
+```sql
+revoke all on schema public from public;
+
+create user grafana_reader with password '<mdp>';
+
+grant connect on database quality_check_data to grafana_reader;
+grant usage on schema public to grafana_reader;
+grant select on all tables in schema public to grafana_reader;
+```
 
 ### Installation de Grafana
 
