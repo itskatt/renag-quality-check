@@ -111,6 +111,8 @@ tar xzf backups_2023-05-19_10-15-41.tar.gz
 ./restore.sh "quality_check_data_backup" "quality_check_data"
 ```
 
+> **Note** : Pour accelerer la restauration des données, il est recomendé de temporairement supprimer les indexes. Vous pouvez utiliser le script [drop_indexes.sql](../database/drop_indexes.sql) pour cela, et ensuite re-créer ces indexes avec [create_indexes.sql](../database/create_indexes.sql).
+
 ## Déployement sur une nouvelle machine
 
 ### Pré-requis
