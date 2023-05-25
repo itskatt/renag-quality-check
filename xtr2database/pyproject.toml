@@ -14,3 +14,6 @@ dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
 xtr2database = "xtr2database:main"
+
+[tool.pytest.ini_options]
+testpaths=["tests"]
