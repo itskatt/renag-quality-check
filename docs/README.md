@@ -201,7 +201,7 @@ Il peut être nécéssaire de configurer d'avantage Grafana en fonction de la co
 
 ### Plugins
 
-Nos visualisation requierent les plugins suivants pour être installé :
+Nos visualisations requierent les plugins suivants :
 
 - nline-plotlyjs-panel
 - marcusolsson-dynamictext-panel
