@@ -125,6 +125,8 @@ Une version récente (15+) est conseillé, même si cela devrait fonctionner ave
 
 ### Configuration de la base de données
 
+#### Création des bases de données
+
 Une fois que la base de donnée est accesible, il est nécéssaire de créer deux bases de données :
 
 - Une pour Grafana
@@ -147,6 +149,26 @@ create user grafana_reader with password '<mdp>';
 grant connect on database quality_check_data to grafana_reader;
 grant usage on schema public to grafana_reader;
 grant select on all tables in schema public to grafana_reader;
+```
+
+#### Importation du schéma
+
+Pour que le script puisse fonctionner, il est nécéssaire d'importer le [schéma](../database/schema.sql) :
+
+```sh
+psql -d quality_check_data -f schema.sql
+```
+
+Ensuite, insérer des données universelles :
+
+```sh
+psql -d quality_check_data -f inserts.sql
+```
+
+Et finalement, créer les indexes. Sachez cependant qu'il est recommandé de les créer une fois que le plus gros des données ont été insérées :
+
+```sh
+psql -d quality_check_data -f create_indexes.sql
 ```
 
 ### Installation de Grafana
