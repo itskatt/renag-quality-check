@@ -216,23 +216,9 @@ def get_args():
         help="Le réseau de station dont proviennent les fichiers"
     )
 
-    update_mode = parser.add_mutually_exclusive_group()
-
-    update_mode.add_argument(
-        "-d", "--date",
-        help="Met à jour les données de la station en se basant sur la date",
-        action="store_true"
-    )
-
-    update_mode.add_argument(
+    parser.add_argument(
         "-o", "--override",
         help="Ecrase toute les données du réseau de station avant de les insérer",
-        action="store_true"
-    )
-
-    parser.add_argument(
-        "-f", "--force",
-        help="Supprime les données existantes avant l'insertion si la base de données est inconsistente",
         action="store_true"
     )
 
@@ -248,43 +234,6 @@ def override_insert(cur, args):
     print("Suppression...")
     clear_tables(cur, args.network)
     return get_all_files(args.xtr_files)
-
-
-def date_insert(cur, args):
-    """
-    Effectue une insertion en se basant sur la date de la dernière insertion.
-    Renvoie la liste de tout les fichiers créés après cette date.
-    """
-    print("Recherche de la date la plus récente...")
-    dates = [get_latest_date(cur, m.value, args.network) for m in TimeSeries]
-    dates.append(get_latest_date(cur, "skyplot", args.network))
-
-    if len(set(dates)) == 1:
-        # La base de données est consistente
-        if dates[0] is not None:
-            # Elle n'est pas vide
-            latest_date = dates[0]
-            print(f"Traitement des fichiers produits après le {latest_date}.")
-
-        else:
-            # Elle semble vide
-            print("La base de données semble vide, nous allons tout envoyer.")
-            clear_tables(cur, args.network)
-            latest_date = None
-
-    else:
-        # La base de données n'est pas consistente
-        print("La base de données n'est pas consistente.")
-        if args.force:
-            latest_date = None
-            print("Suppression de toute les tables...")
-            clear_tables(cur, args.network)
-        else:
-            print("Utilisez l'option --force pour forcer l'insertion.")
-            print("Ou l'option --override pour écraser les données.")
-            sys.exit()
-
-    return get_all_files(args.xtr_files, latest_date)
 
 
 def strict_insert(cur, args):
@@ -321,9 +270,6 @@ def main():
             if args.override:
                 all_files = override_insert(cur, args)
 
-            elif args.date:
-                all_files = date_insert(cur, args)
-
             else:
                 all_files = strict_insert(cur, args)
 
@@ -336,7 +282,7 @@ def main():
     # groupement des fichiers par station
     stations = []
     for key, group in groupby(all_files, get_station_id):
-        stations.append((key, list(str(f.resolve()) for f in group)))
+        stations.append((key, list(str(f.resolve()) for f in group))) # type: ignore
 
     process_sequencial(stations, args.network)
 
