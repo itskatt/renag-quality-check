@@ -82,17 +82,11 @@ Le script va se connecter à la base de données, lire les fichiers xtr dans le 
 
 Par défaut, les données vont être insérées en mode strict : avant de commencer l'insertion, le script va interroger la base de données et récupérer la liste des fichiers dont le contenu a déjà été inséré dedans. Ainsi, le script va traiter uniquement les fichiers qu'il n'a pas déjà traité précédemment.
 
-Comme alternative, il est possible d'utiliser le mode d'insertion par date (en utilisant l'option `--date`). Le script va donc interroger la base de données et insérer uniquement les fichiers produit après cette date.
-
-Il peut arriver que la base de données se retrouve dans un état inconsistant. Cela signifie que les données ne sont pas présentes en quantités égales entre les métriques (par exemple, il y a plus de données sur le Satellite CS que sur le Multipath, ce qui ne devrait pas arriver). Par défaut dans cette situation-là, le script va refuser d'insérer de nouvelles données.
-
-Par contre, il est possible de forcer l'insertion des données malgré ces inconsistance. Dans ce cas, il est possible d'utiliser l'option `--force` pour tout insérer en partant de zéro. Par exemple, pour insérer de nouvelles données en mode date en forçant l'insertion s'il y a un souci d'inconsistance :
+Il est possible d'écraser les données précédement insérées pour un réseau avec l'option `--override` :
 
 ```sh
-xtr2database <chemin> <réseau> --date --force
+xtr2database <chemin/vers/repertoire> <nom du réseau> --override
 ```
-
-Finalement, pour écraser dans tous les cas les données précédentes, il est possible d'utiliser l'option `--override`. Cette option est mutuellement exclusive avec l'option `--date`.
 
 ## Sauvegarde et restauration des données
 
