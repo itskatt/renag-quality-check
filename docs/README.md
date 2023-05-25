@@ -185,7 +185,7 @@ Une fois que Grafana a été installé, il est nécéssaire de configurer. Pour 
 
 #### Section `database`
 
-- `type` = postgres
+- `type` = postgres (ou "mysql" ou "sqlite3")
 - `host` = \<adresse\>:\<port\>
 - `name` = grafana
 - `user` = \<utilisateur\>
