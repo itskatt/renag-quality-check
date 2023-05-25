@@ -2,7 +2,7 @@
 name = "xtr2database"
 description = "Script d'alimentation de la base de données."
 version = "1.0"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 dynamic = ["dependencies"]
 
 [build-system]
