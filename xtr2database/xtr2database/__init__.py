@@ -202,6 +202,7 @@ def process_station(station_fullname, station_files, station_network, lock=None)
         with open("concurent-errors.log", "a") as f:
             f.write(f"Erreur lors du traitement de la station {station_fullname}\n")
             traceback.print_exc(file=f)
+            f.write("\n")
 
 
 def process_sequencial(stations, network):
@@ -217,6 +218,11 @@ def process_parallel(stations, network):
     lock = manager.Lock()
 
     with tqdm(total=len(stations)) as pbar:
+        # On traite la première station toute seule pour limiter les conditions de concurence
+        first = stations.pop(0)
+        process_station(first[0], first[1], network)
+        pbar.update(1)
+
         with ProcessPoolExecutor() as executor:
             # NOTE : ne pas oublier de mettre a jour en fonction de la signature de process_station
             futures = [executor.submit(process_station, name, files, network, lock) for name, files in stations]
