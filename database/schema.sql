@@ -3,24 +3,24 @@
 
 create table constellation (
     id smallserial constraint satellite_system_pk primary key,
-    fullname varchar(10) not null,
-    shortname varchar(4) not null
+    fullname varchar(10) unique not null,
+    shortname varchar(4) unique not null
 );
 
 create table network (
     id smallserial constraint network_pk primary key,
-    name varchar(20) not null
+    name varchar(20) unique not null
 );
 
 create table observation_type (
     id smallserial constraint observation_type_pk primary key,
-    type varchar(3)
+    type varchar(3) unique
 );
 
 create table station (
     id smallserial constraint station_pk primary key,
-    shortname varchar(4) not null,
-    fullname varchar(9) not null,
+    shortname varchar(4) unique not null,
+    fullname varchar(9) unique not null,
     lat double precision,
     long double precision
 );
