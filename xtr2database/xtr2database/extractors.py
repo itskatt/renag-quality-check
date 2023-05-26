@@ -21,6 +21,9 @@ def get_station_id(file):
 
 
 def get_station_coords(f):
+    """
+    Extrait les coordonées d'une station d'un de ses fichiers.
+    """
     line = next(f)
 
     while True:

@@ -17,6 +17,9 @@ db_connection = partial(
 
 
 def clear_tables(cur, network):
+    """
+    Supprime les données des tables des metriques et skyplots.
+    """
     where_clause = """
         where s.station_id in (
             select station_id
@@ -33,30 +36,6 @@ def clear_tables(cur, network):
     cur.execute("delete from inserted_file s" + where_clause, (network,))
 
 
-def get_latest_date(cur, table_name, network):
-    date_col = "date"
-    if table_name == "skyplot":
-        date_col = "datetime::date as date"
-
-    cur.execute(f"""--sql
-        select distinct {date_col}
-        from {table_name} s
-        inner join station_network sn on s.station_id = sn.station_id
-        inner join network n on n.id = sn.network_id
-        where n.name = %s
-        order by date desc
-        limit 1;
-    """, (network,))
-    res = cur.fetchone()
-
-    if res:
-        latest_date = res["date"]
-    else:
-        latest_date = None
-
-    return latest_date
-
-
 class DatabaseFetcher:
     """
     Opérations de récupérations de la base de données, versions thread-safe et non.
@@ -67,6 +46,9 @@ class DatabaseFetcher:
         self._lock = lock
 
     def _create(self, cur, key, fetch_query, insert_args):
+        """
+        Créer un objet dans la base de donné parce qu'il n'existe pas.
+        """
         cur.execute(fetch_query, (key,))
         res = cur.fetchone()
 

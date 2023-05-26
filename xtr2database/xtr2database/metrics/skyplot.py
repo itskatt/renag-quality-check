@@ -109,7 +109,7 @@ def extract_sig2noise(f, data, date):
     _extract_individual_metric(f, data, date, "sig2noise")
 
 
-_SKYPLOT_METRICS = {
+_SKYPLOT_OBS_TYPE = {
     1: {
         "GPS": ("1C", "1*"),
         "GLO": ("1C", "1*"),
@@ -131,9 +131,12 @@ _SKYPLOT_METRICS = {
 }
 
 
-def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
+def _get_skyplot_obs_type(constel, metric, number, i_line, i_coord, all_data):
+    """
+    Renvoie le type d'observable sur lequel se baser pour créer des skyplots.
+    """
     try:
-        band, backup = _SKYPLOT_METRICS[number][constel]
+        band, backup = _SKYPLOT_OBS_TYPE[number][constel]
     except KeyError:
         # Si la constellation n'est pas dans le tableau
         return None, None
@@ -184,13 +187,13 @@ def insert(cur, fetcher, station_id, skyplot_data):
 
                     satellite_number = i_coord + 1
 
-                    mp1, used_mp1 = _get_skyplot_metric(constel, "mp", 1, i_line, i_coord, all_data)
-                    mp2, used_mp2 = _get_skyplot_metric(constel, "mp", 2, i_line, i_coord, all_data)
-                    mp5, used_mp5 = _get_skyplot_metric(constel, "mp", 5, i_line, i_coord, all_data)
+                    mp1, used_mp1 = _get_skyplot_obs_type(constel, "mp", 1, i_line, i_coord, all_data)
+                    mp2, used_mp2 = _get_skyplot_obs_type(constel, "mp", 2, i_line, i_coord, all_data)
+                    mp5, used_mp5 = _get_skyplot_obs_type(constel, "mp", 5, i_line, i_coord, all_data)
 
-                    sig2noise1, used_sig2noise1 = _get_skyplot_metric(constel, "sig2noise", 1, i_line, i_coord, all_data)
-                    sig2noise2, used_sig2noise2 = _get_skyplot_metric(constel, "sig2noise", 2, i_line, i_coord, all_data)
-                    sig2noise5, used_sig2noise5 = _get_skyplot_metric(constel, "sig2noise", 5, i_line, i_coord, all_data)
+                    sig2noise1, used_sig2noise1 = _get_skyplot_obs_type(constel, "sig2noise", 1, i_line, i_coord, all_data)
+                    sig2noise2, used_sig2noise2 = _get_skyplot_obs_type(constel, "sig2noise", 2, i_line, i_coord, all_data)
+                    sig2noise5, used_sig2noise5 = _get_skyplot_obs_type(constel, "sig2noise", 5, i_line, i_coord, all_data)
 
                     # insertion des used_* dans la bdd si ils n'y sont pas
                     if (date_id, station_id, constellation_id) not in _already_inserted_obs_types:

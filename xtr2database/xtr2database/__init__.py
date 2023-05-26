@@ -16,8 +16,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .database import (DatabaseFetcher, clear_tables, db_connection,
-                       get_latest_date)
+from .database import DatabaseFetcher, clear_tables, db_connection
 from .extractors import get_file_date, get_station_coords, get_station_id
 from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
                       extract_from_section_header_into, skyplot)
@@ -34,6 +33,8 @@ def get_station_data(files):
         - Observation CS
         - Satellite CS
         - Skyplots
+        - Les coordonées de la station
+        - La liste des fichiers traités
     """
     sig2noise_data = create_metric_dest(TimeSeries.SIG2NOISE)
     multipath_data = create_metric_dest(TimeSeries.MULTIPATH)
@@ -192,7 +193,6 @@ def process_station(station_fullname, station_files, station_network, lock=None)
     """
     station_data = get_station_data(station_files)
 
-    # TODO réutiliser les connections ?
     with db_connection() as conn:
         with conn.cursor() as cur:
             insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
@@ -219,6 +219,9 @@ def process_parallel(stations, network):
 
 
 def get_args():
+    """
+    Parse les arguments en lignes de commandes avec argparse.
+    """
     parser = argparse.ArgumentParser("xtr2database")
 
     parser.add_argument(
@@ -240,7 +243,7 @@ def get_args():
 
     parser.add_argument(
         "-p", "--parallel",
-        help="Traite les stations en parallèle",
+        help="Traite les stations en parallèle sur plusieurs processus",
         action="store_true"
     )
 
@@ -249,7 +252,7 @@ def get_args():
 
 def override_insert(cur, args):
     """
-    Effectue une insertion en écrasant les données existantes.
+    Prépare pour une insertion en écrasant les données existantes.
     Renvoie la liste de tout les fichiers sans filtre.
     """
     print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
@@ -260,7 +263,7 @@ def override_insert(cur, args):
 
 def strict_insert(cur, args):
     """
-    Effectue une insertion en se basant sur les fichiers déjà insérés.
+    Prépare pour une insertion en se basant sur les fichiers déjà insérés.
     Renvoie la liste de tout les fichiers qui ne sont pas déjà insérés.
     """
     print("Récupération des fichiers insérés dans la base de données...")
@@ -284,6 +287,9 @@ def strict_insert(cur, args):
 
 
 def main():
+    """
+    Programme principal.
+    """
     args = get_args()
 
     with db_connection() as conn:
