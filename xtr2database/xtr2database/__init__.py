@@ -183,7 +183,7 @@ def get_all_files(infiles, after=None):
     return flattened
 
 
-def process_station(station_fullname, station_files, station_network, fetcher):
+def process_station(station_fullname, station_files, station_network, lock=None):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
@@ -193,15 +193,14 @@ def process_station(station_fullname, station_files, station_network, fetcher):
     # TODO réutiliser les connections ?
     with db_connection() as conn:
         with conn.cursor() as cur:
-            insert_into_database(cur, fetcher, station_data, station_fullname, station_network)
+            insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
 
 
 def process_sequencial(stations, network):
     print("Traitement des stations en séquenciel...")
 
-    fetcher = DatabaseFetcher()
     for name, files in tqdm(stations):
-        process_station(name, files, network, fetcher)
+        process_station(name, files, network)
 
 
 def get_args():
