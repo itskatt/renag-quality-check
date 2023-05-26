@@ -66,16 +66,7 @@ class DatabaseFetcher:
     def __init__(self, lock=None):
         self._lock = lock
 
-    def fetch_or_create(self, cur, key, fetch_query, *insert_args):
-        """
-        Récupère l'ID d'un objet à partir de la base de données ou crée un nouvel objet
-        avec l'ID spécifié si aucun n'existe dans la base de données.
-        """
-        # Si l'id a déjà été recupéré, on le prend du cache
-        cached = self._database_fetch_cache.get(key)
-        if cached:
-            return cached
-
+    def _create(self, cur, key, fetch_query, insert_args):
         cur.execute(fetch_query, (key,))
         res = cur.fetchone()
 
@@ -87,6 +78,22 @@ class DatabaseFetcher:
 
         self._database_fetch_cache[key] = obj_id
         return obj_id
+
+    def fetch_or_create(self, cur, key, fetch_query, *insert_args):
+        """
+        Récupère l'ID d'un objet à partir de la base de données ou crée un nouvel objet
+        avec l'ID spécifié si aucun n'existe dans la base de données.
+        """
+        # Si l'id a déjà été recupéré, on le prend du cache
+        cached = self._database_fetch_cache.get(key)
+        if cached:
+            return cached
+
+        if not self._lock:
+            return self._create(cur, key, fetch_query, insert_args)
+
+        with self._lock:
+            return self._create(cur, key, fetch_query, insert_args)
 
     def get_constellation_id(self, cur, constellation_shortname):
         """
