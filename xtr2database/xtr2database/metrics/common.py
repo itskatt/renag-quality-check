@@ -1,9 +1,7 @@
 from psycopg.sql import SQL, Identifier
 
-from ..database import get_constellation_id, get_observation_id
 
-
-def insert_header_section_metric(cur, station_id, metric_data):
+def insert_header_section_metric(cur, fetcher, station_id, metric_data):
     """
     Insère les données d'une métrique extraite dans l'entête d'une section
     dans une base de données.
@@ -12,10 +10,10 @@ def insert_header_section_metric(cur, station_id, metric_data):
     data = metric_data["data"]
     for i in range(metric_data["length"]):
         # Constellation
-        constellation_id = get_constellation_id(cur, data["constellation"][i])
+        constellation_id = fetcher.get_constellation_id(cur, data["constellation"][i])
 
         # Observation type
-        observation_id = get_observation_id(cur, data["observation_type"][i])
+        observation_id = fetcher.get_observation_id(cur, data["observation_type"][i])
 
         # On colle tout ensemble
         row = cur.mogrify(

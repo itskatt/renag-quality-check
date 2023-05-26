@@ -1,9 +1,6 @@
 import datetime as dt
 from collections import defaultdict
 
-from ..database import (fetch_or_create, get_constellation_id,
-                        get_observation_id)
-
 
 def _dd_callback():
     """
@@ -158,18 +155,18 @@ def _get_skyplot_metric(constel, metric, number, i_line, i_coord, all_data):
 _already_inserted_obs_types = set()
 
 
-def insert(cur, station_id, skyplot_data):
+def insert(cur, fetcher, station_id, skyplot_data):
     """
     Insère les données du skyplot dans la base de données.
     """
     to_insert = []
 
     for constel, constel_data in skyplot_data.items():
-        constellation_id = get_constellation_id(cur, constel)
+        constellation_id = fetcher.get_constellation_id(cur, constel)
 
         for datetime, all_data in constel_data.items():
             date = datetime.date()
-            date_id = fetch_or_create(
+            date_id = fetcher.fetch_or_create(
                 cur, date,
                 "select id from skyplot_date where date = %s;",
 
@@ -214,12 +211,12 @@ def insert(cur, station_id, skyplot_data):
                             """,
                             (
                                 date_id, station_id, constellation_id,
-                                get_observation_id(cur, used_mp1),
-                                get_observation_id(cur, used_mp2),
-                                get_observation_id(cur, used_mp5),
-                                get_observation_id(cur, used_sig2noise1),
-                                get_observation_id(cur, used_sig2noise2),
-                                get_observation_id(cur, used_sig2noise5),
+                                fetcher.get_observation_id(cur, used_mp1),
+                                fetcher.get_observation_id(cur, used_mp2),
+                                fetcher.get_observation_id(cur, used_mp5),
+                                fetcher.get_observation_id(cur, used_sig2noise1),
+                                fetcher.get_observation_id(cur, used_sig2noise2),
+                                fetcher.get_observation_id(cur, used_sig2noise5),
                             )
                         )
 

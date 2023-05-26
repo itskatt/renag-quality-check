@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from psycopg.sql import SQL, Identifier
 
-from ..database import get_constellation_id
 from . import TimeSeries
 
 try: # Compatibilité python 3.7
@@ -136,14 +135,14 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
         sat_data["avg_sat"].append(mean(count[constel]) if len(count[constel]) > 0 else 1)
 
 
-def insert_observation(cur, station_id, observation_cs):
+def insert_observation(cur, fetcher, station_id, observation_cs):
     """
     Insère dans la base de données les données de la metrique observation cs.
     """
     to_insert = []
     data = observation_cs["data"]
     for i in range(observation_cs["length"]):
-        constellation_id = get_constellation_id(cur, data["constellation"][i])
+        constellation_id = fetcher.get_constellation_id(cur, data["constellation"][i])
 
         row = cur.mogrify(
             "(%s,%s,%s,%s)",
@@ -158,14 +157,14 @@ def insert_observation(cur, station_id, observation_cs):
     )
 
 
-def insert_satellite(cur, station_id, satellite_cs):
+def insert_satellite(cur, fetcher, station_id, satellite_cs):
     """
     Insère dans la base de données les données de la metrique satellite cs.
     """
     to_insert = []
     data = satellite_cs["data"]
     for i in range(satellite_cs["length"]):
-        constellation_id = get_constellation_id(cur, data["constellation"][i])
+        constellation_id = fetcher.get_constellation_id(cur, data["constellation"][i])
 
         row = cur.mogrify(
             "(%s,%s,%s,%s)",

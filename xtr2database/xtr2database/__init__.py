@@ -14,7 +14,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .database import (clear_tables, db_connection, fetch_or_create,
+from .database import (DatabaseFetcher, clear_tables, db_connection,
                        get_latest_date)
 from .extractors import get_file_date, get_station_coords, get_station_id
 from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
@@ -106,14 +106,14 @@ def get_station_data(files):
     )
 
 
-def insert_into_database(cur, data, station_fullname, station_network):
+def insert_into_database(cur, fetcher, data, station_fullname, station_network):
     """
     Insère toute les données d'une station dans la base de données.
     """
     # récupération de la station
     station_lat, station_long = data[2]
 
-    station_id = fetch_or_create(
+    station_id = fetcher.fetch_or_create(
         cur, station_fullname,
         "select id from station where fullname = %s;",
 
@@ -122,7 +122,7 @@ def insert_into_database(cur, data, station_fullname, station_network):
     )
 
     # lien avec le réseau
-    network_id = fetch_or_create(
+    network_id = fetcher.fetch_or_create(
         cur, station_network,
         "select id from network where name = %s;",
 
@@ -146,16 +146,16 @@ def insert_into_database(cur, data, station_fullname, station_network):
     # Insertion des données de la station
     for time_serie in data[0]: # en premier les séries temporelles
         if time_serie["type"] == TimeSeries.OBSERVATION_CS.value:
-            cycle_slip.insert_observation(cur, station_id, time_serie)
+            cycle_slip.insert_observation(cur, fetcher, station_id, time_serie)
 
         elif time_serie["type"] == TimeSeries.SATELLITE_CS.value:
-            cycle_slip.insert_satellite(cur, station_id, time_serie)
+            cycle_slip.insert_satellite(cur, fetcher, station_id, time_serie)
 
         else:
-            common.insert_header_section_metric(cur, station_id, time_serie)
+            common.insert_header_section_metric(cur, fetcher, station_id, time_serie)
 
     # ensuite le skyplot (pas de boucle comme y'en a un seul)
-    skyplot.insert(cur, station_id, data[1])
+    skyplot.insert(cur, fetcher, station_id, data[1])
 
     # On note les fichiers traités
     to_insert = ",".join(cur.mogrify("(%s,%s)", (f, station_id)) for f in data[3])
@@ -183,7 +183,7 @@ def get_all_files(infiles, after=None):
     return flattened
 
 
-def process_station(station_fullname, station_files, station_network):
+def process_station(station_fullname, station_files, station_network, fetcher):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
@@ -193,13 +193,15 @@ def process_station(station_fullname, station_files, station_network):
     # TODO réutiliser les connections ?
     with db_connection() as conn:
         with conn.cursor() as cur:
-            insert_into_database(cur, station_data, station_fullname, station_network)
+            insert_into_database(cur, fetcher, station_data, station_fullname, station_network)
 
 
 def process_sequencial(stations, network):
     print("Traitement des stations en séquenciel...")
+
+    fetcher = DatabaseFetcher()
     for name, files in tqdm(stations):
-        process_station(name, files, network)
+        process_station(name, files, network, fetcher)
 
 
 def get_args():
