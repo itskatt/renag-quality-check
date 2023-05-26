@@ -85,8 +85,8 @@ class DatabaseFetcher:
         avec l'ID spécifié si aucun n'existe dans la base de données.
         """
         # Si l'id a déjà été recupéré, on le prend du cache
-        cached = self._database_fetch_cache.get(key)
-        if cached:
+        cached = self._database_fetch_cache.get(key, "-empty")
+        if cached != "-empty":
             return cached
 
         if not self._lock:
