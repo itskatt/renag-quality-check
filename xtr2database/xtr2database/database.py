@@ -61,10 +61,10 @@ class DatabaseFetcher:
     """
     Opérations de récupérations de la base de données, versions thread-safe et non.
     """
+    _database_fetch_cache = {}
+
     def __init__(self, lock=None):
         self._lock = lock
-
-        self._database_fetch_cache = {}
 
     def fetch_or_create(self, cur, key, fetch_query, *insert_args):
         """
