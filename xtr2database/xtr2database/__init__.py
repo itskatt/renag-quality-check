@@ -218,7 +218,6 @@ def process_parallel(stations, network):
                 pbar.update(1)
 
 
-
 def get_args():
     parser = argparse.ArgumentParser("xtr2database")
 
