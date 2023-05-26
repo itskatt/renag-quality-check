@@ -8,6 +8,7 @@ Parse les fichiers XTR et insère les résultats dans une base de données.
 import argparse
 import os
 import sys
+import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import date
 from itertools import groupby
@@ -191,11 +192,16 @@ def process_station(station_fullname, station_files, station_network, lock=None)
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
     """
-    station_data = get_station_data(station_files)
+    try:
+        station_data = get_station_data(station_files)
 
-    with db_connection() as conn:
-        with conn.cursor() as cur:
-            insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
+        with db_connection() as conn:
+            with conn.cursor() as cur:
+                insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
+    except Exception:
+        with open("concurent-errors.log", "a") as f:
+            f.write(f"Erreur lors du traitement de la station {station_fullname}\n")
+            traceback.print_exc(file=f)
 
 
 def process_sequencial(stations, network):
