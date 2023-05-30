@@ -70,6 +70,13 @@ Si cela ne marche pas, peut être que le script n'est pas dans votre path. Dans 
 python3 -m xtr2database -h
 ```
 
+### Gestion des identifiants de connexion à la base de données
+
+Pour se connecter à la base de données, il y a deux moyen de spécifier les identifiants.
+
+- Par variables d'environement, en configurant `X2D_USER` et `X2D_PASSWORD` avec le nom d'utilisateur et le mot de passe respectivement.
+- Par arguments en ligne de commande, avec `--user` et `--password`. Les arguments en ligne de commande sont prioritaire sur les variables d'environement.
+
 ### Utilisation
 
 Une utilisation basique du script s'effectue de la manière suivante :
