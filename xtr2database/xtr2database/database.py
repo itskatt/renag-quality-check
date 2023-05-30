@@ -7,13 +7,18 @@ from psycopg.sql import SQL, Identifier
 
 from .metrics import TimeSeries
 
-db_connection = partial(
-    psycopg.connect,
-    dbname="quality_check_data",
-    user="m1m", # TODO: changer
-    row_factory=dict_row,
-    cursor_factory=ClientCursor
-) # type: ignore
+
+def create_db_connection():
+    """
+    Créer une fonction de connexion à la base de données.
+    """
+    return partial(
+        psycopg.connect,
+        dbname="quality_check_data",
+        user="m1m",
+        row_factory=dict_row,
+        cursor_factory=ClientCursor
+    ) # type: ignore
 
 
 def clear_tables(cur, network):

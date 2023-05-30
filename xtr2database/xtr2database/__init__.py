@@ -17,7 +17,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .database import DatabaseFetcher, clear_tables, db_connection
+from .database import DatabaseFetcher, clear_tables, create_db_connection
 from .extractors import get_file_date, get_station_coords, get_station_id
 from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
                       extract_from_section_header_into, skyplot)
@@ -187,7 +187,7 @@ def get_all_files(infiles, after=None):
     return flattened
 
 
-def process_station(station_fullname, station_files, station_network, lock=None):
+def process_station(db_connection, station_fullname, station_files, station_network, lock=None):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
@@ -205,14 +205,14 @@ def process_station(station_fullname, station_files, station_network, lock=None)
             f.write("\n")
 
 
-def process_sequencial(stations, network):
+def process_sequencial(db_connection, stations, network):
     print("Traitement des stations en séquenciel...")
 
     for name, files in tqdm(stations):
-        process_station(name, files, network)
+        process_station(db_connection, name, files, network)
 
 
-def process_parallel(stations, network):
+def process_parallel(db_connection, stations, network):
     print("Traitement des stations en paralèlle...")
     manager = Manager()
     lock = manager.Lock()
@@ -220,7 +220,7 @@ def process_parallel(stations, network):
     with tqdm(total=len(stations)) as pbar:
         # On traite la première station toute seule pour limiter les conditions de concurence
         first = stations.pop(0)
-        process_station(first[0], first[1], network)
+        process_station(db_connection, first[0], first[1], network)
         pbar.update(1)
 
         with ProcessPoolExecutor() as executor:
@@ -304,6 +304,8 @@ def main():
     """
     args = get_args()
 
+    db_connection = create_db_connection()
+
     with db_connection() as conn:
         with conn.cursor() as cur:
 
@@ -325,8 +327,8 @@ def main():
         stations.append((key, list(str(f.resolve()) for f in group))) # type: ignore
 
     if args.parallel:
-        process_parallel(stations, args.network)
+        process_parallel(db_connection, stations, args.network)
     else:
-        process_sequencial(stations, args.network)
+        process_sequencial(db_connection, stations, args.network)
 
     print("OK !")
