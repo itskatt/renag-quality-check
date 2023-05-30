@@ -199,10 +199,15 @@ def process_station(db_connection, station_fullname, station_files, station_netw
             with conn.cursor() as cur:
                 insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
     except Exception:
-        with open("concurent-errors.log", "a") as f:
-            f.write(f"Erreur lors du traitement de la station {station_fullname}\n")
-            traceback.print_exc(file=f)
-            f.write("\n")
+        if lock is None:
+            print("Erreur lors du traitement de la station", station_fullname, file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+            print(file=sys.stderr)
+        else:
+            with open("concurent-errors.log", "a") as f:
+                f.write(f"Erreur lors du traitement de la station {station_fullname}\n")
+                traceback.print_exc(file=f)
+                f.write("\n")
 
 
 def process_sequencial(db_connection, stations, network):
