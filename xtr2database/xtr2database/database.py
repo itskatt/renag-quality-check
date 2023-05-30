@@ -8,14 +8,15 @@ from psycopg.sql import SQL, Identifier
 from .metrics import TimeSeries
 
 
-def create_db_connection():
+def create_db_connection(user, password):
     """
     Créer une fonction de connexion à la base de données.
     """
     return partial(
         psycopg.connect,
         dbname="quality_check_data",
-        user="m1m",
+        user=user,
+        password=password,
         row_factory=dict_row,
         cursor_factory=ClientCursor
     ) # type: ignore

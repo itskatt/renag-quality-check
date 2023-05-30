@@ -259,6 +259,16 @@ def get_args():
         action="store_true"
     )
 
+    parser.add_argument(
+        "-U", "--user",
+        help="Spécifie le nom d'utilisateur pour se connecter à la base de données"
+    )
+
+    parser.add_argument(
+        "-P", "--password",
+        help="Spécifie le mot de passe à utiliser pour se connecter à la base de données"
+    )
+
     return parser.parse_args()
 
 
@@ -304,7 +314,22 @@ def main():
     """
     args = get_args()
 
-    db_connection = create_db_connection()
+    # Les arguments CLI sont prioritaire sur les variables d'env
+    if not args.user:
+        try:
+            user = os.environ["X2D_USER"]
+        except KeyError:
+            print(
+                "Erreur : pas d'utilisateur spécifié (ni dans la variable "
+                "d'environement X2D_USER ni en argument de ligne de commande)"
+            )
+            sys.exit(-1)
+    else:
+        user = args.user
+
+    password = args.password or os.environ.get("X2D_PASSWORD")
+
+    db_connection = create_db_connection(user, password)
 
     with db_connection() as conn:
         with conn.cursor() as cur:
