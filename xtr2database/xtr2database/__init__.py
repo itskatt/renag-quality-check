@@ -260,7 +260,7 @@ def get_args():
 
     parser.add_argument(
         "-p", "--parallel",
-        help="Traite les stations en parallèle sur plusieurs processus",
+        help="Traite les stations en parallèle sur plusieurs processus. Experimental",
         action="store_true"
     )
 
