@@ -172,15 +172,15 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network):
     )
 
 
-def get_all_files(infiles, after=None):
+def get_all_files(infiles, blacklist=None):
     """
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
-    On peut les filtrer pour uniquement avoir ceux crées après une certaine date.
+    On peut les filtrer pour en blacklister certains.
     """
-    if not after:
-        after = date.fromtimestamp(0)
+    if blacklist is None:
+        blacklist = []
 
-    flattened = [f for f in infiles.rglob("*.xtr") if get_file_date(f.stem) > after]
+    flattened = [f for f in infiles.rglob("*.xtr") if f.stem not in blacklist]
 
     flattened.sort(key=get_station_id)
 
@@ -310,7 +310,7 @@ def strict_insert(cur, args):
     blacklisted_files = [r["name"] for r in res]
     print(f"{len(blacklisted_files)} fichiers trouvés.")
 
-    return [file for file in get_all_files(args.xtr_files) if file.stem not in blacklisted_files]
+    return get_all_files(args.xtr_files, blacklisted_files)
 
 
 def main():
