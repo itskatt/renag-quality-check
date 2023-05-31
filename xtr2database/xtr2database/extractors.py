@@ -4,11 +4,11 @@ Fonctions pour extraire des données des fichiers XTR.
 from datetime import datetime
 
 
-def get_file_date(filename):
+def get_file_date(file_stem):
     """
     Renvoie la date d'un fichier xtr.
     """
-    date_ = filename.split("-", 1)[1]
+    date_ = file_stem.split("-", 1)[1]
     parsed = datetime.strptime(date_, "%Y-%m-%d")
     return parsed.date()
 
