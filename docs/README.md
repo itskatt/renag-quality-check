@@ -95,6 +95,8 @@ Il est possible d'écraser les données précédement insérées pour un réseau
 xtr2database <chemin/vers/repertoire> <nom du réseau> --override
 ```
 
+Finalement, il est possible de décomprésser à la volée des fichiers xtr compressé avec gzip avec l'option `--gziped`.
+
 ## Sauvegarde et restauration des données
 
 Il est recommandé d'effectuer des sauvegardes régulières des bases de données. Pour cela, un script de sauvegarde des données (`backup.sh`) ainsi qu'un script de restauration des données (`restore.sh`) sont fournis.

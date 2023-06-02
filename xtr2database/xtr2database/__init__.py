@@ -270,7 +270,7 @@ def get_args():
 
     parser.add_argument(
         "-z", "--gziped",
-        help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse les à la volée",
+        help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse-les à la volée",
         action="store_true"
     )
 
