@@ -10,7 +10,8 @@ import os
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from datetime import date
+from functools import partial
+from gzip import open as gopen
 from itertools import groupby
 from multiprocessing import Manager
 from pathlib import Path
@@ -23,7 +24,7 @@ from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
                       extract_from_section_header_into, skyplot)
 
 
-def get_station_data(files):
+def get_station_data(files, gziped=False):
     """
     Extrait les données d'une station et les met en forme pour l'insertion dans
     une bdd de type relationelle.
@@ -49,13 +50,15 @@ def get_station_data(files):
 
     inserted_files = []
 
+    opener = partial(gopen, mode="rt") if gziped else partial(open, mode="r")
+
     # Extraction des informations des fichiers
     for file in files:
-        filename = file.split(".")[-2].rpartition(os.sep)[-1]
+        filename = file.split(".")[-3 if gziped else -2].rpartition(os.sep)[-1]
         current_date = get_file_date(filename)
 
         parsed_sections = 0
-        with open(file, "r", encoding="ascii") as f:  # l'encodage ascii est le plus rapide
+        with opener(file, encoding="ascii") as f:  # l'encodage ascii est le plus rapide
             # extract_from_prepro_res et extract_from_band_avail ont besoin de savoir
             #   cb ya de constellation au total dans le fichier (pour
             #   marquer clairement à 0 les absences de CS et eviter les décalages)
@@ -65,33 +68,33 @@ def get_station_data(files):
                 if parsed_sections == 7:
                     break
 
-                elif line.startswith("#====== Summary statistics"):
+                elif line.startswith("#====== Summary statistics"): # type: ignore
                     nb_constell = cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Estimated values"):
+                elif line.startswith("#====== Estimated values"): # type: ignore
                     if station_coords[0] is None:
                         station_coords = get_station_coords(f)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Band available"):
+                elif line.startswith("#====== Band available"): # type: ignore
                     cycle_slip.extract_from_band_avail(f, satellite_cs, nb_constell)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Preprocessing results"):
+                elif line.startswith("#====== Preprocessing results"): # type: ignore
                     cycle_slip.extract_from_prepro_res(f, satellite_cs, skyplot_data, nb_constell, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Elevation & Azimuth"):
+                elif line.startswith("#====== Elevation & Azimuth"): # type: ignore
                     skyplot.extract_elevation_azimut(f, skyplot_data, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Code multipath"):
+                elif line.startswith("#====== Code multipath"): # type: ignore
                     if extract_from_section_header_into(f, multipath_data, current_date):
                         skyplot.extract_multipath(f, skyplot_data, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Signal to noise ratio"):
+                elif line.startswith("#====== Signal to noise ratio"): # type: ignore
                     if extract_from_section_header_into(f, sig2noise_data, current_date):
                         skyplot.extract_sig2noise(f, skyplot_data, current_date)
                     parsed_sections += 1
@@ -172,7 +175,7 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network):
     )
 
 
-def get_all_files(infiles, blacklist=None):
+def get_all_files(infiles, blacklist=None, *, gziped=False):
     """
     Renvoie la liste de tout les fichiers qui doivent êtres traités.
     On peut les filtrer pour en blacklister certains.
@@ -180,20 +183,21 @@ def get_all_files(infiles, blacklist=None):
     if blacklist is None:
         blacklist = []
 
-    flattened = [f for f in infiles.rglob("*.xtr") if f.stem not in blacklist]
+    pattern = "*.xtr.gz" if gziped else "*.xtr"
 
+    flattened = [f for f in infiles.rglob(pattern) if str(f.name).split(".")[0] not in blacklist]
     flattened.sort(key=get_station_id)
 
     return flattened
 
 
-def process_station(db_connection, station_fullname, station_files, station_network, lock=None):
+def process_station(db_connection, station_fullname, station_files, station_network, *, lock=None, gziped=False):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
     """
     try:
-        station_data = get_station_data(station_files)
+        station_data = get_station_data(station_files, gziped)
 
         with db_connection() as conn:
             with conn.cursor() as cur:
@@ -210,14 +214,14 @@ def process_station(db_connection, station_fullname, station_files, station_netw
                 f.write("\n")
 
 
-def process_sequencial(db_connection, stations, network):
+def process_sequencial(db_connection, stations, network, gziped=False):
     print("Traitement des stations en séquenciel...")
 
     for name, files in tqdm(stations):
-        process_station(db_connection, name, files, network)
+        process_station(db_connection, name, files, network, gziped=gziped)
 
 
-def process_parallel(db_connection, stations, network):
+def process_parallel(db_connection, stations, network, gziped):
     print("Traitement des stations en paralèlle...")
     manager = Manager()
     lock = manager.Lock()
@@ -230,7 +234,7 @@ def process_parallel(db_connection, stations, network):
 
         with ProcessPoolExecutor() as executor:
             # NOTE : ne pas oublier de mettre a jour en fonction de la signature de process_station
-            futures = [executor.submit(process_station, name, files, network, lock) for name, files in stations]
+            futures = [executor.submit(process_station, name, files, network, dict(lock=lock, gziped=gziped)) for name, files in stations]
             for _ in as_completed(futures):
                 pbar.update(1)
 
@@ -265,6 +269,12 @@ def get_args():
     )
 
     parser.add_argument(
+        "-z", "--gziped",
+        help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse les à la volée",
+        action="store_true"
+    )
+
+    parser.add_argument(
         "-U", "--user",
         help="Spécifie le nom d'utilisateur pour se connecter à la base de données"
     )
@@ -285,7 +295,7 @@ def override_insert(cur, args):
     print(f"Toutes les données du réseau {args.network} vont êtres ecrasées.")
     print("Suppression...")
     clear_tables(cur, args.network)
-    return get_all_files(args.xtr_files)
+    return get_all_files(args.xtr_files, gziped=args.gziped)
 
 
 def strict_insert(cur, args):
@@ -310,7 +320,7 @@ def strict_insert(cur, args):
     blacklisted_files = [r["name"] for r in res]
     print(f"{len(blacklisted_files)} fichiers trouvés.")
 
-    return get_all_files(args.xtr_files, blacklisted_files)
+    return get_all_files(args.xtr_files, blacklisted_files, gziped=args.gziped)
 
 
 def main():
@@ -357,8 +367,8 @@ def main():
         stations.append((key, list(str(f.resolve()) for f in group))) # type: ignore
 
     if args.parallel:
-        process_parallel(db_connection, stations, args.network)
+        process_parallel(db_connection, stations, args.network, args.gziped)
     else:
-        process_sequencial(db_connection, stations, args.network)
+        process_sequencial(db_connection, stations, args.network, args.gziped)
 
     print("OK !")

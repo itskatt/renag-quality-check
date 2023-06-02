@@ -27,6 +27,13 @@ def create_dest():
     return defaultdict(lambda: defaultdict(_dd_callback))
 
 
+def _safe_to_int(value):
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
 def _extract_coord(f, date, data):
     """
     Extrait l'evevation où l'azimut.
@@ -45,7 +52,7 @@ def _extract_coord(f, date, data):
 
 
         data[constel][line_datetime][coord].append(
-            [int(v) if v != "-" else None for v in splitted[4:]]
+            [_safe_to_int(v) for v in splitted[4:]]
         )
 
         line = next(f)
@@ -91,7 +98,7 @@ def _extract_individual_metric(f, data, date, metric_type):
             data[constel][line_datetime][metric_type][band] = []
 
         data[constel][line_datetime][metric_type][band].append(
-            [int(v) if v != "-" else None for v in splitted[4:]]
+            [_safe_to_int(v) for v in splitted[4:]]
         )
 
 
