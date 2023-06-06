@@ -1,14 +1,5 @@
-do $$
-    declare
-        name text;
-    begin
-        for name in (
-            select indexname
-            from pg_indexes
-            where tablename = 'skyplot' and
-                  starts_with(indexname, 'speed-')
-        ) loop
-            execute 'drop index ' || quote_ident(name) || ';';
-        end loop;
-    end;
-$$;
+drop index "speed-skyplot-cs1";
+drop index "speed-skyplot-cs2";
+drop index "speed-skyplot-cs5";
+
+drop index "speed-skyplot-station-date";
