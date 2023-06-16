@@ -27,6 +27,28 @@ TODO
 - Compte admin
 - Ajouter des utilisateurs
 
+## Ajout d'un nouveau réseau
+
+Pour ajouter un nouveau réseau, allez sur la plage des tableaux de bord. De la, créez un nouveau dossier :
+
+![Création d'un nouveau dossier](img/new_folder.png)
+
+Ensuite, aller dans la page d'importation d'un nouveau tableau de bord :
+
+![Importation d'un nouveau tableau de bord](img/import_dashboard.png)
+
+De la, pour chaque fichier de tableau de bord présent [ici](../grafana/), glissez-déposez le dans la zone prévue à cet effet puis remplissez les informations suivantes :
+
+![Etapes d'importation](img/import_how2.png)
+
+1. Donnez un nom unique au tableau
+2. Vérifiez qu'il soit dans le bon dossier
+3. Donnez lui un identifiant unique
+4. Séléctionnez la bonne source de données PostgreSQL
+5. Nommez la variable `network` avec le nom du réseau utilisé lors de l'importation avec le script
+
+Vous pouvez ensuite faire les ajustements necéssaires.
+
 ## Script d'alimentation de la base de données
 
 Pour pouvoir lire et extraire les données pertinentes à l'affichage des graphiques depuis les fichiers XTR et les insérer dans la base de données, un script (xtr2database) est fourni.
