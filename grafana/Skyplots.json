@@ -188,7 +188,7 @@
           }
         }
       ],
-      "title": "SNR1 (dB-Hz)",
+      "title": "SNR1 (dB-Hz) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -289,7 +289,7 @@
           }
         }
       ],
-      "title": "SNR2 (dB-Hz)",
+      "title": "SNR2 (dB-Hz) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -390,7 +390,7 @@
           }
         }
       ],
-      "title": "SNR5 (dB-Hz)",
+      "title": "SNR5 (dB-Hz) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -504,7 +504,7 @@
           }
         }
       ],
-      "title": "MP1 (cm)",
+      "title": "MP1 (cm) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -605,7 +605,7 @@
           }
         }
       ],
-      "title": "MP2 (cm)",
+      "title": "MP2 (cm) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -706,7 +706,7 @@
           }
         }
       ],
-      "title": "MP5 (cm)",
+      "title": "MP5 (cm) - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -820,7 +820,7 @@
           }
         }
       ],
-      "title": "CS1",
+      "title": "CS1 - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -921,7 +921,7 @@
           }
         }
       ],
-      "title": "CS2",
+      "title": "CS2 - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -1022,7 +1022,7 @@
           }
         }
       ],
-      "title": "CS5",
+      "title": "CS5 - $station - $constellation - $day",
       "transformations": [],
       "type": "nline-plotlyjs-panel"
     },
@@ -1309,6 +1309,6 @@
   "timezone": "",
   "title": "Skyplots",
   "uid": "d142a90b-c21f-4706-8284-3fb57a442aa3",
-  "version": 130,
+  "version": 135,
   "weekStart": ""
 }
