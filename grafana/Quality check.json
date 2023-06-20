@@ -1969,7 +1969,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  shortname as name,\r\n  -- n.name as network,\r\n  lat,\r\n  case\r\n    when long > 180 then long - 360\r\n    else long\r\n  end as long,\r\n  case\r\n    when shortname != '$station' then 0\r\n    when shortname = '$station' then 80\r\n  end as color\r\nfrom\r\n  station\r\n  inner join station_network sn on station.id = sn.station_id\r\n  inner join network n on n.id = sn.network_id\r\nwhere n.name = '$network'; ",
+          "rawSql": "select\r\n  shortname as name,\r\n  -- n.name as network,\r\n  lat,\r\n  case\r\n    when long > 180 then long - 360\r\n    else long\r\n  end as long,\r\n  case\r\n    when fullname != '$station' then 0\r\n    when fullname = '$station' then 80\r\n  end as color\r\nfrom\r\n  station\r\n  inner join station_network sn on station.id = sn.station_id\r\n  inner join network n on n.id = sn.network_id\r\nwhere n.name = '$network'; ",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1994,7 +1994,7 @@
       "type": "geomap"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
   "style": "dark",
@@ -2084,13 +2084,13 @@
     ]
   },
   "time": {
-    "from": "2023-03-20T17:35:51.333Z",
-    "to": "2023-05-19T03:33:24.458Z"
+    "from": "now/y",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Quality check",
   "uid": "mXHW63P4k",
-  "version": 90,
+  "version": 91,
   "weekStart": "monday"
 }
