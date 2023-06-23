@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   grafana:
-    image: grafana/grafana-oss:9.5.1
+    image: grafana/grafana-oss:9.5.2
     container_name: grafana
     restart: on-failure
     ports:
