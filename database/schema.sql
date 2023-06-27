@@ -1,5 +1,25 @@
 ------------------------------------------------------------------------------------------------------------------------
--- Tables de bases
+-- Tables des réseaux et stations
+
+create table network (
+    id smallserial constraint network_pk primary key,
+    name varchar(20) unique not null
+);
+
+create table station (
+    id smallserial constraint station_pk primary key,
+    network_id smallint
+        constraint station_network_id_fk references network
+        on delete cascade,
+    shortname varchar(4) not null,
+    fullname varchar(9) unique not null,
+    lat double precision,
+    long double precision,
+    unique (fullname, network_id)
+);
+
+------------------------------------------------------------------------------------------------------------------------
+-- Tables de données de bases partagées entre les tables de données de graphes
 
 create table constellation (
     id smallserial constraint satellite_system_pk primary key,
@@ -7,32 +27,9 @@ create table constellation (
     shortname varchar(4) unique not null
 );
 
-create table network (
-    id smallserial constraint network_pk primary key,
-    name varchar(20) unique not null
-);
-
 create table observation_type (
     id smallserial constraint observation_type_pk primary key,
     type varchar(3) unique
-);
-
-create table station (
-    id smallserial constraint station_pk primary key,
-    shortname varchar(4) not null,
-    fullname varchar(9) unique not null,
-    lat double precision,
-    long double precision
-);
-
-create table station_network (
-    station_id smallint
-        constraint station_network_station_id_fk references station
-        on delete cascade,
-    network_id smallint
-        constraint station_network_network_id_fk references network
-        on delete cascade,
-    constraint station_network_pk primary key (station_id, network_id)
 );
 
 ------------------------------------------------------------------------------------------------------------------------
