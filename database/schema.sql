@@ -12,7 +12,7 @@ create table station (
         constraint station_network_id_fk references network
         on delete cascade,
     shortname varchar(4) not null,
-    fullname varchar(9) unique not null,
+    fullname varchar(9) not null,
     lat double precision,
     long double precision,
     unique (fullname, network_id)
@@ -41,7 +41,7 @@ create table inserted_file (
     station_id smallint
         constraint inserted_file_station_id_fk references station
         on delete cascade,
-    unique (name)
+    unique (name, station_id)
 );
 
 ------------------------------------------------------------------------------------------------------------------------
