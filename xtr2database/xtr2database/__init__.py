@@ -113,42 +113,34 @@ def get_station_data(files, gziped=False):
     )
 
 
-def insert_into_database(cur, fetcher, data, station_fullname, station_network):
+def insert_into_database(cur, fetcher, data, station_fullname, station_network_name):
     """
     Insère toute les données d'une station dans la base de données.
     """
+
+    # lien avec le réseau 
+    network_id = fetcher.fetch_or_create(
+        cur, station_network_name,
+        "select id from network where name = %s;",
+
+        "insert into network (name) values (%s) returning id;",
+        (station_network_name,)
+    )
+
     # récupération de la station
     station_lat, station_long = data[2]
 
     station_id = fetcher.fetch_or_create(
         cur, station_fullname,
-        "select id from station where fullname = %s;",
-
-        "insert into station (shortname, fullname, lat, long) values (%s , %s, %s, %s) returning id;",
-        (station_fullname[:4], station_fullname, station_lat, station_long)
-    )
-
-    # lien avec le réseau
-    network_id = fetcher.fetch_or_create(
-        cur, station_network,
-        "select id from network where name = %s;",
-
-        "insert into network (name) values (%s) returning id;",
-        (station_network,)
-    )
-
-    cur.execute(
         f"""--sql
-        select count(*)
-        from station_network
-        where station_id = {station_id} and network_id = {network_id};
-        """
-    )
-    res = cur.fetchone()
+        select id
+        from station
+        where network_id = {network_id} and fullname = %s;
+        """,
 
-    # Si la station ne fait pas partie du réseau, on la relie
-    if res["count"] == 0:
-        cur.execute(f"insert into station_network (station_id, network_id) values ({station_id}, {network_id});")
+        "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
+        (network_id, station_fullname[:4], station_fullname, station_lat, station_long)
+    )
 
     # Insertion des données de la station
     for time_serie in data[0]: # en premier les séries temporelles
@@ -169,8 +161,7 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network):
     cur.execute(
         f"""--sql
         insert into inserted_file (name, station_id)
-        values {to_insert}
-        on conflict do nothing;
+        values {to_insert};
         """
     )
 
@@ -191,7 +182,7 @@ def get_all_files(infiles, blacklist=None, *, gziped=False):
     return flattened
 
 
-def process_station(db_connection, station_fullname, station_files, station_network, *, lock=None, gziped=False):
+def process_station(db_connection, station_fullname, station_files, station_network_name, *, lock=None, gziped=False):
     """
     Extrait les données d'une sation et les insère dans la base de données.
     Les noms des fichiers doivent être des chaines de caractère
@@ -201,7 +192,7 @@ def process_station(db_connection, station_fullname, station_files, station_netw
 
         with db_connection() as conn:
             with conn.cursor() as cur:
-                insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network)
+                insert_into_database(cur, DatabaseFetcher(lock), station_data, station_fullname, station_network_name)
     except Exception:
         if lock is None:
             print("Erreur lors du traitement de la station", station_fullname, file=sys.stderr)
@@ -309,8 +300,7 @@ def strict_insert(cur, args):
         select i.name as name
         from inserted_file i
         inner join station s on s.id = i.station_id
-        inner join station_network sn on s.id = sn.station_id
-        inner join network n on n.id = sn.network_id
+        inner join network n on n.id = s.network_id
         where n.name = %s;
         """,
         (args.network,)
@@ -318,7 +308,7 @@ def strict_insert(cur, args):
     res = cur.fetchall()
 
     blacklisted_files = [r["name"] for r in res]
-    print(f"{len(blacklisted_files)} fichiers trouvés.")
+    print(f"{len(blacklisted_files)} fichiers déjà inserés trouvés.")
 
     return get_all_files(args.xtr_files, blacklisted_files, gziped=args.gziped)
 
@@ -356,7 +346,7 @@ def main():
                 all_files = strict_insert(cur, args)
 
     nb_files = len(all_files)
-    print(nb_files, "fichiers vont être traitées.")
+    print(nb_files, "nouveaux fichiers vont être traitées.")
 
     if nb_files == 0:
         sys.exit()

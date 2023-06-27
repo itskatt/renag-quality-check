@@ -28,9 +28,9 @@ def clear_tables(cur, network):
     """
     where_clause = """
         where s.station_id in (
-            select station_id
-            from station_network
-            inner join network n on station_network.network_id = n.id
+            select sta.id
+            from station sta
+            inner join network n on sta.network_id = n.id
             where n.name = %s
         );
     """
