@@ -1142,8 +1142,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1240,14 +1239,14 @@
           "type": "postgres",
           "uid": "${DS_POSTGRESQL}"
         },
-        "definition": "select s.fullname\nfrom station s\ninner join station_network sn on s.id = sn.station_id\ninner join network n on n.id = sn.network_id\nwhere n.name = '$network';",
+        "definition": "select s.fullname\nfrom station s\ninner join network n on n.id = s.network_id\nwhere n.name = '$network';",
         "hide": 0,
         "includeAll": false,
         "label": "Select station",
         "multi": false,
         "name": "station",
         "options": [],
-        "query": "select s.fullname\nfrom station s\ninner join station_network sn on s.id = sn.station_id\ninner join network n on n.id = sn.network_id\nwhere n.name = '$network';",
+        "query": "select s.fullname\nfrom station s\ninner join network n on n.id = s.network_id\nwhere n.name = '$network';",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -1310,6 +1309,6 @@
   "timezone": "",
   "title": "Skyplots",
   "uid": "d142a90b-c21f-4706-8284-3fb57a442aa3",
-  "version": 140,
+  "version": 141,
   "weekStart": ""
 }
