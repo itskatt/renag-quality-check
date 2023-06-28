@@ -122,8 +122,10 @@ async def main():
 
         print()
 
+        video_name = f'{query["var-network"][0]}_{query["var-station"][0]}_{query["var-constellation"][0]}-from_{first_date}_to_{last_date}.mp4'
+
         proc = await asyncio.create_subprocess_shell(
-            f"ffmpeg -y -r 10 -f image2 -i \"{tmp}/%06d.png\" -vcodec libx264 -crf 10 -pix_fmt yuv420p \"{here / 'out.mp4'}\"",
+            f"ffmpeg -y -r 10 -f image2 -i \"{tmp}/%06d.png\" -vcodec libx264 -crf 10 -pix_fmt yuv420p \"{here / video_name}\"",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
@@ -132,7 +134,7 @@ async def main():
         sdtout, stderr = await proc.communicate()
 
         if proc.returncode == 0:
-            print("Fini ! La vidéo a été sauvegardé sous le nom...")
+            print(f'Fini ! La vidéo a été sauvegardé sous le nom "{video_name}".')
             return
 
         # Il y a eu un soucis avec ffmpeg
