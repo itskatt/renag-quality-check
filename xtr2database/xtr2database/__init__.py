@@ -254,7 +254,7 @@ def get_args():
     )
 
     parser.add_argument(
-        "-p", "--parallel",
+        "--parallel",
         help="Traite les stations en parallèle sur plusieurs processus. Experimental",
         action="store_true"
     )
@@ -263,6 +263,16 @@ def get_args():
         "-z", "--gziped",
         help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse-les à la volée",
         action="store_true"
+    )
+
+    parser.add_argument(
+        "-H", "--remote-host",
+        help="Spécifie l'adresse du serveur pour se connecter à la base de données"
+    )
+
+    parser.add_argument(
+        "-p", "--port",
+        help="Spécifie le port pour se connecter à la base de données"
     )
 
     parser.add_argument(
@@ -334,7 +344,7 @@ def main():
 
     password = args.password or os.environ.get("X2D_PASSWORD")
 
-    db_connection = create_db_connection(user, password)
+    db_connection = create_db_connection(user, password, args.remote_host, args.port)
 
     with db_connection() as conn:
         with conn.cursor() as cur:

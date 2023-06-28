@@ -8,12 +8,14 @@ from psycopg.sql import SQL, Identifier
 from .metrics import TimeSeries
 
 
-def create_db_connection(user, password):
+def create_db_connection(user, password, remote_host, port):
     """
     Créer une fonction de connexion à la base de données.
     """
     return partial(
         psycopg.connect,
+        host=remote_host,
+        port=port,
         dbname="quality_check_data",
         user=user,
         password=password,
