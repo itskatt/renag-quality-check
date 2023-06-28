@@ -658,7 +658,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.shortname || 'S' || ot.type as \"band\"\r\nfrom\r\n  sig2noise\r\n  inner join station s on sig2noise.station_id = s.id\r\n  inner join constellation c on c.id = sig2noise.constellation_id\r\n  inner join observation_type ot on sig2noise.observation_type_id = ot.id\r\n  inner join station_network sn on sig2noise.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and ot.type in (${observation_type:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  band desc;",
+          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.shortname || 'S' || ot.type as \"band\"\r\nfrom\r\n  sig2noise\r\n  inner join station s on sig2noise.station_id = s.id\r\n  inner join constellation c on c.id = sig2noise.constellation_id\r\n  inner join observation_type ot on sig2noise.observation_type_id = ot.id\r\n  inner join network n on s.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and ot.type in (${observation_type:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  band desc;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1257,7 +1257,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.shortname || 'M' || ot.type as \"band\"\r\nfrom\r\n  multipath mp\r\n  inner join station s on mp.station_id = s.id\r\n  inner join constellation c on c.id = mp.constellation_id\r\n  inner join observation_type ot on mp.observation_type_id = ot.id\r\n  inner join station_network sn on mp.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and ot.type in (${observation_type:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  band desc;",
+          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.shortname || 'M' || ot.type as \"band\"\r\nfrom\r\n  multipath mp\r\n  inner join station s on mp.station_id = s.id\r\n  inner join constellation c on c.id = mp.constellation_id\r\n  inner join observation_type ot on mp.observation_type_id = ot.id\r\n  inner join network n on s.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and ot.type in (${observation_type:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  band desc;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1509,7 +1509,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.fullname\r\nfrom\r\n  observation_cs\r\n  inner join station s on observation_cs.station_id = s.id\r\n  inner join constellation c on c.id = observation_cs.constellation_id\r\n  inner join station_network sn on observation_cs.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  value desc;",
+          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.fullname\r\nfrom\r\n  observation_cs\r\n  inner join station s on observation_cs.station_id = s.id\r\n  inner join constellation c on c.id = observation_cs.constellation_id\r\n  inner join network n on s.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  value desc;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1748,7 +1748,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.fullname\r\nfrom\r\n  satellite_cs\r\n  inner join station s on satellite_cs.station_id = s.id\r\n  inner join constellation c on c.id = satellite_cs.constellation_id\r\n  inner join station_network sn on satellite_cs.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  value desc;",
+          "rawSql": "select\r\n  $__time(\"date\"),\r\n  value as \" \",\r\n  c.fullname\r\nfrom\r\n  satellite_cs\r\n  inner join station s on satellite_cs.station_id = s.id\r\n  inner join constellation c on c.id = satellite_cs.constellation_id\r\n  inner join network n on s.network_id = n.id\r\nwhere\r\n  $__timeFilter(\"date\")\r\n  and s.fullname = '$station'\r\n  and c.fullname in (${constellation:sqlstring})\r\n  and n.name = '$network'\r\norder by\r\n  value desc;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1857,8 +1857,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "orange",
@@ -1969,7 +1968,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  shortname as name,\r\n  -- n.name as network,\r\n  lat,\r\n  case\r\n    when long > 180 then long - 360\r\n    else long\r\n  end as long,\r\n  case\r\n    when fullname != '$station' then 0\r\n    when fullname = '$station' then 80\r\n  end as color\r\nfrom\r\n  station\r\n  inner join station_network sn on station.id = sn.station_id\r\n  inner join network n on n.id = sn.network_id\r\nwhere n.name = '$network'; ",
+          "rawSql": "select\r\n  shortname as name,\r\n  lat,\r\n  case\r\n    when long > 180 then long - 360\r\n    else long\r\n  end as long,\r\n  case\r\n    when fullname != '$station' then 0\r\n    when fullname = '$station' then 80\r\n  end as color\r\nfrom\r\n  station\r\n  inner join network n on n.id = network_id\r\nwhere n.name = '$network'; ",
           "refId": "A",
           "sql": {
             "columns": [
@@ -2027,14 +2026,14 @@
           "type": "postgres",
           "uid": "${DS_POSTGRESQL}"
         },
-        "definition": "select s.fullname\nfrom station s\ninner join station_network sn on s.id = sn.station_id\ninner join network n on n.id = sn.network_id\nwhere n.name = '$network';",
+        "definition": "select s.fullname\nfrom station s\ninner join network n on n.id = s.network_id\nwhere n.name = '$network';",
         "hide": 0,
         "includeAll": false,
         "label": "Select station",
         "multi": false,
         "name": "station",
         "options": [],
-        "query": "select s.fullname\nfrom station s\ninner join station_network sn on s.id = sn.station_id\ninner join network n on n.id = sn.network_id\nwhere n.name = '$network';",
+        "query": "select s.fullname\nfrom station s\ninner join network n on n.id = s.network_id\nwhere n.name = '$network';",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2091,6 +2090,6 @@
   "timezone": "",
   "title": "Quality check",
   "uid": "mXHW63P4k",
-  "version": 91,
+  "version": 95,
   "weekStart": "monday"
 }

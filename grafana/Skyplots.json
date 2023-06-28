@@ -167,7 +167,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    sig2noise1 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    sig2noise1 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    sig2noise1 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    sig2noise1 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -268,7 +268,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  90 - elevation as \"r\",\r\n  azimut as \"theta\",\r\n  sig2noise2 as \"value\",\r\n  'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n  '$constellation' as \"constellation\"\r\nfrom\r\n  skyplot\r\n  inner join station s on s.id = skyplot.station_id\r\n  inner join constellation c on c.id = skyplot.constellation_id\r\n  inner join station_network sn on skyplot.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\n  inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n  s.fullname = '$station'\r\n  and c.fullname = '$constellation'\r\n  and sig2noise2 is not null\r\n  and n.name = '$network'\r\n  and sd.date = '$day';",
+          "rawSql": "select\r\n  90 - elevation as \"r\",\r\n  azimut as \"theta\",\r\n  sig2noise2 as \"value\",\r\n  'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n  '$constellation' as \"constellation\"\r\nfrom\r\n  skyplot\r\n  inner join station s on s.id = skyplot.station_id\r\n  inner join constellation c on c.id = skyplot.constellation_id\r\n  inner join network n on s.network_id = n.id\r\n  inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n  s.fullname = '$station'\r\n  and c.fullname = '$constellation'\r\n  and sig2noise2 is not null\r\n  and n.name = '$network'\r\n  and sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -369,7 +369,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    sig2noise5 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    sig2noise5 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    sig2noise5 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    sig2noise5 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -483,7 +483,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp1 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp1 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp1 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp1 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -584,7 +584,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp2 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp2 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp2 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp2 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -685,7 +685,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp5 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp5 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    mp5 as \"value\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    mp5 is not null and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -799,7 +799,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    cs1 and\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    cs1 and\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -900,7 +900,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join station_network sn on skyplot.station_id = sn.station_id\r\n    inner join network n on sn.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    cs2 and\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
+          "rawSql": "select\r\n    90 - elevation as \"r\",\r\n    azimut as \"theta\",\r\n    'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n    '$constellation' as \"constellation\"\r\nfrom\r\n    skyplot\r\n    inner join station s on s.id = skyplot.station_id\r\n    inner join constellation c on c.id = skyplot.constellation_id\r\n    inner join network n on s.network_id = n.id\r\n    inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n    cs2 and\r\n    s.fullname = '$station' and\r\n    c.fullname = '$constellation' and\r\n    n.name = '$network' and\r\n    sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1001,7 +1001,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  90 - elevation as \"r\",\r\n  azimut as \"theta\",\r\n  'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n  '$constellation' as \"constellation\"\r\nfrom\r\n  skyplot\r\n  inner join station s on s.id = skyplot.station_id\r\n  inner join constellation c on c.id = skyplot.constellation_id\r\n  inner join station_network sn on skyplot.station_id = sn.station_id\r\n  inner join network n on sn.network_id = n.id\r\n  inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n  cs5\r\n  and s.fullname = '$station'\r\n  and c.fullname = '$constellation'\r\n  and n.name = '$network'\r\n  and sd.date = '$day';",
+          "rawSql": "select\r\n  90 - elevation as \"r\",\r\n  azimut as \"theta\",\r\n  'G' || to_char(satellite, 'fm00') as \"satellite\",\r\n  '$constellation' as \"constellation\"\r\nfrom\r\n  skyplot\r\n  inner join station s on s.id = skyplot.station_id\r\n  inner join constellation c on c.id = skyplot.constellation_id\r\n  inner join network n on s.network_id = n.id\r\n  inner join skyplot_date sd on date_id = sd.id\r\nwhere\r\n  cs5\r\n  and s.fullname = '$station'\r\n  and c.fullname = '$constellation'\r\n  and n.name = '$network'\r\n  and sd.date = '$day';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1075,7 +1075,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n    s.fullname,\r\n    split_part('$day', '-', 1) as year,\r\n    to_char('$day'::date - date_trunc('year', '$day'::date)::date + 1, 'fm000') as number,\r\n    '$day' as day\r\nfrom station s\r\n  inner join station_network sn on sn.station_id = s.id\r\n  inner join network n on n.id = sn.network_id\r\nwhere fullname = '$station'\r\nlimit 1;",
+          "rawSql": "select\r\n    s.fullname,\r\n    split_part('$day', '-', 1) as year,\r\n    to_char('$day'::date - date_trunc('year', '$day'::date)::date + 1, 'fm000') as number,\r\n    '$day' as day\r\nfrom station s\r\n  inner join network n on n.id = s.network_id\r\nwhere fullname = '$station'\r\nlimit 1;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1142,7 +1142,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
@@ -1182,7 +1183,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select\r\n  c.fullname as \"Constellation\",\r\n  ot1.type as \"MP1\",\r\n  ot2.type as \"MP2\",\r\n  ot5.type as \"MP5\",\r\n  snr1.type as \"SNR1\",\r\n  snr2.type as \"SNR2\",\r\n  snr5.type as \"SNR5\"\r\nfrom\r\n  skyplot_used_band b\r\n  inner join skyplot_date sd on b.date_id = sd.id\r\n  inner join station s on b.station_id = s.id\r\n  inner join station_network sn on sn.station_id = s.id\r\n  inner join network n on n.id = sn.network_id\r\n  inner join constellation c on c.id = b.constellation_id\r\n  inner join observation_type ot1 on b.mp1_observation_type_id = ot1.id\r\n  inner join observation_type ot2 on ot2.id = b.mp2_observation_type_id\r\n  inner join observation_type ot5 on ot5.id = b.mp5_observation_type_id\r\n  inner join observation_type snr1 on snr1.id = b.sig2noise1_observation_type_id\r\n  inner join observation_type snr2 on snr2.id = b.sig2noise2_observation_type_id\r\n  inner join observation_type snr5 on snr5.id = b.sig2noise5_observation_type_id\r\nwhere\r\n  sd.date = '$day'\r\n  and s.fullname = '$station';",
+          "rawSql": "select\r\n  c.fullname as \"Constellation\",\r\n  ot1.type as \"MP1\",\r\n  ot2.type as \"MP2\",\r\n  ot5.type as \"MP5\",\r\n  snr1.type as \"SNR1\",\r\n  snr2.type as \"SNR2\",\r\n  snr5.type as \"SNR5\"\r\nfrom\r\n  skyplot_used_band b\r\n  inner join skyplot_date sd on b.date_id = sd.id\r\n  inner join station s on b.station_id = s.id\r\n  inner join network n on n.id = s.network_id\r\n  inner join constellation c on c.id = b.constellation_id\r\n  inner join observation_type ot1 on b.mp1_observation_type_id = ot1.id\r\n  inner join observation_type ot2 on ot2.id = b.mp2_observation_type_id\r\n  inner join observation_type ot5 on ot5.id = b.mp5_observation_type_id\r\n  inner join observation_type snr1 on snr1.id = b.sig2noise1_observation_type_id\r\n  inner join observation_type snr2 on snr2.id = b.sig2noise2_observation_type_id\r\n  inner join observation_type snr5 on snr5.id = b.sig2noise5_observation_type_id\r\nwhere\r\n  sd.date = '$day'\r\n  and s.fullname = '$station';",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1309,6 +1310,6 @@
   "timezone": "",
   "title": "Skyplots",
   "uid": "d142a90b-c21f-4706-8284-3fb57a442aa3",
-  "version": 135,
+  "version": 140,
   "weekStart": ""
 }
