@@ -10,19 +10,20 @@ import aiohttp
 here = Path(__file__).parent
 semaphore = asyncio.Semaphore(5)
 
-def daterange(start_date, end_date):
+
+def daterange(start_date: datetime, end_date: datetime):
     out = []
     for n in range(int((end_date - start_date).days) + 1):
         out.append((start_date + timedelta(n)).strftime("%Y-%m-%d"))
     return out
 
 
-async def download_image(sess: aiohttp.ClientSession, parse_res: ParseResult, query: dict, i, date, dest):
+async def download_image(sess: aiohttp.ClientSession, parse_res: ParseResult, query: dict, i: int, date: datetime, dest: Path):
     query["var-day"] = [date]
     url = parse_res.scheme + "://" + parse_res.netloc + parse_res.path + "?" + urlencode({k: v[0] for k, v in query.items()})
     async with semaphore:
         async with sess.get(url) as res:
-            with open(f"{dest}/{i:04}.png", "wb") as f:
+            with open(dest / f"{i:04}.png", "wb") as f:
                 f.write(await res.read())
 
 
@@ -37,7 +38,7 @@ async def main():
     stdout, _ = await proc.communicate()
 
     if proc.returncode != 0:
-        print("FFmpeg n'est pas instalé et est requis : https://ffmpeg.org/")
+        print("FFmpeg n'est pas installé et est requis : https://ffmpeg.org/")
         return
     
     version = " ".join(stdout.decode().splitlines()[0].split()[:3])
@@ -61,10 +62,10 @@ async def main():
     with TemporaryDirectory() as tmp:
         async with aiohttp.ClientSession() as sess:
             print("Génération des images...")
-            await tqdm_asyncio.gather(*[download_image(sess, first, query.copy(), i, d, tmp) for i, d in enumerate(all_dates)])
+            await tqdm_asyncio.gather(*[download_image(sess, first, query.copy(), i, d, Path(tmp)) for i, d in enumerate(all_dates)])
 
         proc = await asyncio.create_subprocess_shell(
-            f"ffmpeg -y -r 10 -f image2 -i \"{tmp}/%04d.png\" -vcodec libx264 -crf 5 -pix_fmt yuv420p \"{here / 'out.mp4'}\""
+            f"ffmpeg -y -r 10 -f image2 -i \"{tmp}/%04d.png\" -vcodec libx264 -crf 10 -pix_fmt yuv420p \"{here / 'out.mp4'}\""
         )
 
         await proc.communicate()
