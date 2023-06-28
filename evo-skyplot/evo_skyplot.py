@@ -3,13 +3,14 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from textwrap import indent, wrap
 from urllib.parse import ParseResult, parse_qs, urlencode, urlparse
 
 import aiohttp
 from tqdm.asyncio import tqdm_asyncio
 
-URL_REGEX = re.compile("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$")
+URL_REGEX = re.compile(
+    "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+)
 VALID_DATE_REGEX = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 here = Path(__file__).parent
@@ -26,12 +27,26 @@ def daterange(start_date: datetime, end_date: datetime):
     return out
 
 
-async def download_image(sess: aiohttp.ClientSession, parse_res: ParseResult, query: dict, i: int, date: datetime, dest: Path):
+async def download_image(
+    sess: aiohttp.ClientSession,
+    parse_res: ParseResult,
+    query: dict,
+    i: int,
+    date: datetime,
+    dest: Path,
+):
     """
     Télécharge une image de façon asynchrone et l'enregistre dans le dossier `dest`
     """
     query["var-day"] = [date]
-    url = parse_res.scheme + "://" + parse_res.netloc + parse_res.path + "?" + urlencode({k: v[0] for k, v in query.items()})
+    url = (
+        parse_res.scheme
+        + "://"
+        + parse_res.netloc
+        + parse_res.path
+        + "?"
+        + urlencode({k: v[0] for k, v in query.items()})
+    )
     async with semaphore:
         async with sess.get(url) as res:
             with open(dest / f"{i:06}.png", "wb") as f:
@@ -43,7 +58,8 @@ def is_first_url_valid(url: str):
 
 
 async def main():
-    print("""
+    print(
+        """
   ________      ______         _____ _  ____     _______  _      ____ _______ 
  |  ____\ \    / / __ \       / ____| |/ /\ \   / /  __ \| |    / __ \__   __|
  | |__   \ \  / / |  | |_____| (___ | ' /  \ \_/ /| |__) | |   | |  | | | |   
@@ -51,13 +67,14 @@ async def main():
  | |____   \  / | |__| |      ____) | . \    | |  | |    | |___| |__| | | |   
  |______|   \/   \____/      |_____/|_|\_\   |_|  |_|    |______\____/  |_|   
 
-    """)
+    """
+    )
 
     # Est-ce qu'on a ffmpeg ?
     proc = await asyncio.create_subprocess_shell(
         "ffmpeg -version",
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
     )
 
     stdout, _ = await proc.communicate()
@@ -65,7 +82,7 @@ async def main():
     if proc.returncode != 0:
         print("FFmpeg n'est pas installé et est requis : https://ffmpeg.org/")
         return
-    
+
     version = " ".join(stdout.decode().splitlines()[0].split()[:3])
     print(f"Nous allons utiliser {version} pour produire la vidéo")
     print()
@@ -99,7 +116,7 @@ async def main():
             continue
 
         last_date_obj = datetime.strptime(last_date, "%Y-%m-%d")
-            
+
         if first_date_obj > last_date_obj:
             print("La date de fin ne peut pas être antérieure à celle de début.")
             continue
@@ -118,16 +135,21 @@ async def main():
     with TemporaryDirectory() as tmp:
         async with aiohttp.ClientSession() as sess:
             print("Génération des images...")
-            await tqdm_asyncio.gather(*[download_image(sess, first_url, query.copy(), i, d, Path(tmp)) for i, d in enumerate(all_dates)])
+            await tqdm_asyncio.gather(
+                *[
+                    download_image(sess, first_url, query.copy(), i, d, Path(tmp))
+                    for i, d in enumerate(all_dates)
+                ]
+            )
 
         print()
 
         video_name = f'{query["var-network"][0]}_{query["var-station"][0]}_{query["var-constellation"][0]}-from_{first_date}_to_{last_date}.mp4'
 
         proc = await asyncio.create_subprocess_shell(
-            f"ffmpeg -y -r 10 -f image2 -i \"{tmp}/%06d.png\" -vcodec libx264 -crf 10 -pix_fmt yuv420p \"{here / video_name}\"",
+            f'ffmpeg -y -r 10 -f image2 -i "{tmp}/%06d.png" -vcodec libx264 -crf 10 -pix_fmt yuv420p "{here / video_name}"',
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
 
         print("Création de la vidéo avec ffmpeg...")
@@ -145,6 +167,9 @@ async def main():
         print(stderr.decode().strip())
         print("\\===========================")
         print()
-        print("Il y a eu un soucis avec ffmpeg, regardez au dessus pour plus de details.")
+        print(
+            "Il y a eu un soucis avec ffmpeg, regardez au dessus pour plus de details."
+        )
+
 
 asyncio.run(main())
