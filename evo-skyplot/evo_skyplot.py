@@ -93,14 +93,21 @@ async def async_main():
     while True:
         raw_url = input(">> ").strip()
 
-        if is_first_url_valid(raw_url) and URL_REGEX.fullmatch(raw_url):
-            break
+        if not is_first_url_valid(raw_url) or not URL_REGEX.fullmatch(raw_url):
+            print("L'url n'est pas valide, veuillez en donner une autre.")
+            print("(Cela doit être l'url du rendu de la première image).")
+            continue
 
-        print("L'url n'est pas valide, veuillez en donner une autre.")
-        print("(Cela doit être l'url du rendu de la première image).")
+        first_url = urlparse(raw_url)
+        query = dict(parse_qs(first_url.query))
 
-    first_url = urlparse(raw_url)
-    query = dict(parse_qs(first_url.query))
+        if "var-date" not in query:
+            print("Vous devez cliquer une fois sur une des options du menu déroulant avant de copier l'url.")
+            print("Veuillez réessayer une fois que vous avez fait cela :")
+            continue
+
+        break
+
     first_date = query["var-day"][0]
     first_date_obj = datetime.strptime(first_date, "%Y-%m-%d")
 
