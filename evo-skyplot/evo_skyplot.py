@@ -91,7 +91,11 @@ async def async_main():
     print("Url de la première image :")
     raw_url = ""
     while True:
-        raw_url = input(">> ").strip()
+        try:
+            raw_url = input(">> ").strip()
+        except EOFError:
+            print()
+            return
 
         if not is_first_url_valid(raw_url) or not URL_REGEX.fullmatch(raw_url):
             print("L'url n'est pas valide, veuillez en donner une autre.")
@@ -116,7 +120,11 @@ async def async_main():
     print(f"La date de début est {first_date}, donnez celle de fin (même format) :")
     last_date = ""
     while True:
-        last_date = input(">> ")
+        try:
+            last_date = input(">> ")
+        except EOFError:
+            print()
+            return
 
         if not VALID_DATE_REGEX.fullmatch(last_date):
             print("Respectez le format de la date svp.")
@@ -180,7 +188,11 @@ async def async_main():
 
 
 def main():
-    asyncio.run(async_main())
+    try:
+        asyncio.run(async_main())
+    except KeyboardInterrupt:
+        print("Au revoir")
+        return
 
 
 if __name__ == "__main__":
