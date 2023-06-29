@@ -1,0 +1,19 @@
+[project]
+name = "evo-skyplot"
+description = "Créer une vidéo montrant l'évolution d'un skyplot en fonction du temps"
+version = "0.1.0"
+authors = [
+    { name = "Raphaël Caldwell", email = "raphael.caldwell@etu.univ-cotedazur.fr" }
+]
+requires-python = ">=3.7"
+dynamic = ["dependencies"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+evo-skyplot = "evo_skyplot:main"
