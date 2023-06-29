@@ -1,9 +1,13 @@
+# Example docker-compose.yml file, please adapt to your needs
+
 version: '3.8'
 services:
   grafana:
     image: grafana/grafana-oss:9.5.2
-    container_name: grafana
-    restart: on-failure
+    container_name: grafana-frontend
+    restart: unless-stopped
+    depends_on:
+      - database
     ports:
       - 3000:3000
     extra_hosts:
@@ -13,10 +17,25 @@ services:
 
       - GF_INSTALL_PLUGINS=nline-plotlyjs-panel,marcusolsson-dynamictext-panel
 
-      - GF_DATABASE_TYPE=postgres
-      - GF_DATABASE_HOST=host.docker.internal:5432
-      - GF_DATABASE_NAME=grafana
-      - GF_DATABASE_USER=m1m # TODO: change this
-
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_NAME=Géoazur
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+
+  database:
+    image: postgres:15-alpine
+    container_name: postgres-database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+      # Init scripts
+      - ./init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/schema.sql0
+      - ../database/inserts.sql:/docker-entrypoint-initdb.d/inserts.sql0
+      - ../database/create_indexes.sql:/docker-entrypoint-initdb.d/create_indexes.sql0
