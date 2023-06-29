@@ -57,7 +57,7 @@ def is_first_url_valid(url: str):
     return "/render/d-solo/" in url
 
 
-async def main():
+async def async_main():
     print(
         """
   ________      ______         _____ _  ____     _______  _      ____ _______ 
@@ -172,4 +172,9 @@ async def main():
         )
 
 
-asyncio.run(main())
+def main():
+    asyncio.run(async_main())
+
+
+if __name__ == "__main__":
+    main()
