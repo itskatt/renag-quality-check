@@ -8,13 +8,13 @@ Pour chaque jour dans l'intervalle, il enregistre une photo du graphique puis le
 
 ## Pré-requis
 
-Il est nécessaire que l'instance de Grafana que vous comptiez utiliser possède le plugin [Grafana image renderer](https://grafana.com/grafana/plugins/grafana-image-renderer/). Si vous avez un doute, contacter votre administrateur.
+Il est nécessaire que l'instance de Grafana que vous comptez utiliser possède le plugin [Grafana image renderer](https://grafana.com/grafana/plugins/grafana-image-renderer/). Si vous avez un doute, contacter votre administrateur.
 
 ## Installation
 
 Pour installer et utiliser ce script, vous devez avoir [Python 3.7+](https://www.python.org/downloads/), [git](https://git-scm.com/) et [Ffmpeg](https://ffmpeg.org/) d'installé et de disponible dans votre PATH.
 
-Si vous êtes sur Windows, il est conseillé d'utiliser Scoop pour installer Ffmpeg :
+Si vous êtes sur Windows, il est conseillé d'utiliser [Scoop](https://scoop.sh/) pour installer Ffmpeg :
 
 ```powershell
 scoop install main/ffmpeg
@@ -28,7 +28,7 @@ pip install git+https://gitlab.oca.eu/AstroGeoGPM/renag-qc#subdirectory=evo-skyp
 
 ## Utilisation
 
-Ouvrez un terminal à l'emplacement pu vous voulez sauvegarder la vidéo, puis lancez la commande suivante :
+Ouvrez un terminal à l'emplacement ou vous voulez sauvegarder la vidéo, puis lancez la commande suivante :
 
 ```sh
 evo-skyplot
@@ -39,7 +39,7 @@ python -m evo-skyplot
 
 Suivez ensuite les instructions affichées.
 
-> *Notes*
+> **Notes**
 > 
-> - L'url de la première image correspond au lien du rendu disponible dans le panneau de partage. Faîtes un clic-droit sur le bouton puis copiez l'url.
-> - Avant de copier le lien, vous devez cliquer au moin une fois sur une option du menu déroulant. Le script vous avertira si vous n'avez pas fait ça.
+> - L'URL de la première image correspond au lien du rendu disponible dans le panneau de partage. Faites un clic droit sur le bouton puis copiez l'URL.
+> - Avant de copier le lien, vous devez cliquer au moins une fois sur une option du menu déroulant. Le script vous avertira si vous n'avez pas fait ça.
