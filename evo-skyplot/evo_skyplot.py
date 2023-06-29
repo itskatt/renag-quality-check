@@ -13,7 +13,7 @@ URL_REGEX = re.compile(
 )
 VALID_DATE_REGEX = re.compile(r"\d{4}-\d{2}-\d{2}")
 
-here = Path(__file__).parent
+here = Path(".")
 semaphore = asyncio.Semaphore(5)
 
 
@@ -156,7 +156,7 @@ async def async_main():
         sdtout, stderr = await proc.communicate()
 
         if proc.returncode == 0:
-            print(f'Fini ! La vidéo a été sauvegardé sous le nom "{video_name}".')
+            print(f'Fini ! La vidéo a été sauvegardé sous le nom "{video_name}" dans votre répertoire courrant.')
             return
 
         # Il y a eu un soucis avec ffmpeg
