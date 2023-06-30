@@ -166,3 +166,16 @@ create table skyplot (
     cs5 boolean not null default false,
     unique (datetime, station_id, constellation_id, satellite)
 );
+
+------------------------------------------------------------------------------------------------------------------------
+-- Table status des fichiers
+create table file_status (
+    id serial constraint file_status_pk primary key,
+    date date not null,
+    station_id smallint
+        constraint file_status_id_fk references station
+        on delete cascade,
+    has_raw boolean not null default false,
+    has_rinex3 boolean not null default false,
+    has_xtr boolean not null default false
+);
