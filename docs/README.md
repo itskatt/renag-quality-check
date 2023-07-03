@@ -46,7 +46,6 @@ Pour pouvoir lire et extraire les données pertinentes à l'affichage des graphi
 
 ### Instalation du script
 
-<!-- TODO : tester les compatibilité de version -->
 > **NOTE :** Le script requiert la version 3.7 de Python minimum pour fonctionner, idéalement la version 3.11.
 
 Une fois que vous vous êtes déplacé dans le répertoire [xtr2database](../xtr2database/), suivez les étapes suivantes :
@@ -109,31 +108,6 @@ xtr2database <chemin/vers/repertoire> <nom du réseau> --override
 ```
 
 Finalement, il est possible de décomprésser à la volée des fichiers xtr compressé avec gzip avec l'option `--gziped`.
-
-## Sauvegarde et restauration des données
-
-Il est recommandé d'effectuer des sauvegardes régulières des bases de données. Pour cela, un script de sauvegarde des données (`backup.sh`) ainsi qu'un script de restauration des données (`restore.sh`) sont fournis.
-
-Pour que les script fonctionnent, il est nécéssaire d'avoir les utilitaire `pg_dump` et `pg_restore` sur le PATH.
-
-<!-- TODO : username + password -->
-
-Exemple d'utilisation :
-
-```sh
-# Sauvegarde des bases de données
-./backup.sh
-# Cela produit un fichier "backups_2023-05-19_10-15-41.tar.gz"
-
-# Restauration
-# Extraction de l'archive
-tar xzf backups_2023-05-19_10-15-41.tar.gz
-
-# Restauration des données de "quality_check_data_backup" dans la base de données "quality_check_data"
-./restore.sh "quality_check_data_backup" "quality_check_data"
-```
-
-> **Note** : Pour accelerer la restauration des données, il est recomendé de temporairement supprimer les indexes. Vous pouvez utiliser le script [drop_indexes.sql](../database/drop_indexes.sql) pour cela, et ensuite re-créer ces indexes avec [create_indexes.sql](../database/create_indexes.sql).
 
 ## Déployement sur une nouvelle machine
 
