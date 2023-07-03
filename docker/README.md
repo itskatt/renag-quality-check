@@ -2,7 +2,7 @@
 
 Ceci est un exemple de configuration Docker Compose pour déployer l'application. **A adapter selon vos besoins.**
 
-## Instructions
+## Comment lancer l'application ?
 
 Tout simplement : 
 
