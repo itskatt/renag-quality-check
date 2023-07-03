@@ -5,6 +5,7 @@ version = "0.2.0"
 authors = [
     { name = "Raphaël Caldwell", email = "raphael.caldwell@etu.univ-cotedazur.fr" }
 ]
+license = {text = "MIT"}
 requires-python = ">=3.7"
 dynamic = ["dependencies"]
 
