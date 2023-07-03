@@ -15,7 +15,7 @@ create database quality_check_data;
 -- create the indexes
 \i /docker-entrypoint-initdb.d/create_indexes.sql0
 
--- create the user for grafana
+-- prevent permissions leaking from the public role
 revoke all on schema public from public;
 
 -- create the user for grafana
