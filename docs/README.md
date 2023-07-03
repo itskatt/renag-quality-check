@@ -44,70 +44,9 @@ Vous pouvez ensuite faire les ajustements necéssaires.
 
 Pour pouvoir lire et extraire les données pertinentes à l'affichage des graphiques depuis les fichiers XTR et les insérer dans la base de données, un script (xtr2database) est fourni.
 
-### Instalation du script
+### Instalation et utilisation du script
 
-> **NOTE :** Le script requiert la version 3.7 de Python minimum pour fonctionner, idéalement la version 3.11.
-
-Une fois que vous vous êtes déplacé dans le répertoire [xtr2database](../xtr2database/), suivez les étapes suivantes :
-
-1. #### Création d'un environnement virtuel (optionnel)
-
-    Un [environnement virtuel en Python](https://docs.python.org/3/library/venv.html) est un espace isolé qui permet de gérer facilement les dépendances et les configurations spécifiques d'un projet, offrant ainsi une meilleure portabilité et évitant les conflits entre différentes applications.
-
-    Suivez cette étape si l'installation du script pose un souci de compatibilité de dépendances. Sachez qu'il sera nécessaire d'activer (une seule fois) l'environnement virtuel à chaque utilisation du script.
-
-    ```sh
-    # Création
-    python3 -m venv env
-
-    # Activation
-    source env/bin/activate
-    ```
-
-2. #### Installation du script
-
-    ```sh
-    python3 -m pip install -U .
-    ```
-
-Vous pouvez maintenant utiliser le script ! Testez qu'il soit bien installé avec la commande suivante :
-
-```sh
-xtr2database --help
-```
-
-Si cela ne marche pas, peut être que le script n'est pas dans votre path. Dans ce cas, il faudrait utiliser :
-
-```sh
-python3 -m xtr2database -h
-```
-
-### Gestion des identifiants de connexion à la base de données
-
-Pour se connecter à la base de données, il y a deux moyen de spécifier les identifiants.
-
-- Par variables d'environement, en configurant `X2D_USER` et `X2D_PASSWORD` avec le nom d'utilisateur et le mot de passe respectivement.
-- Par arguments en ligne de commande, avec `--user` et `--password`. Les arguments en ligne de commande sont prioritaire sur les variables d'environement.
-
-### Utilisation
-
-Une utilisation basique du script s'effectue de la manière suivante :
-
-```sh
-xtr2database <chemin/vers/repertoire> <nom du réseau>
-```
-
-Le script va se connecter à la base de données, lire les fichiers xtr dans le répertoire précisé et sauvegarder les données comme faisant partie du réseau donné.
-
-Par défaut, les données vont être insérées en mode strict : avant de commencer l'insertion, le script va interroger la base de données et récupérer la liste des fichiers dont le contenu a déjà été inséré dedans. Ainsi, le script va traiter uniquement les fichiers qu'il n'a pas déjà traité précédemment.
-
-Il est possible d'écraser les données précédement insérées pour un réseau avec l'option `--override` :
-
-```sh
-xtr2database <chemin/vers/repertoire> <nom du réseau> --override
-```
-
-Finalement, il est possible de décomprésser à la volée des fichiers xtr compressé avec gzip avec l'option `--gziped`.
+Voir [ici](../xtr2database/README.md)
 
 ## Déployement sur une nouvelle machine
 
