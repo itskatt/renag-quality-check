@@ -237,7 +237,3 @@ Nos visualisations requierent les plugins suivants :
 Une fois que la base de données est prête et que Grafana a été correctement configuré et installé, il faut définir notre base de données comme source de données pour Grafana.
 
 Référez-vous à la documentation officielle de Grafana : https://grafana.com/docs/grafana/latest/datasources/postgres/#postgresql-settings.
-
-### Importation des dashboards
-
-TODO comment importer les dashboards
