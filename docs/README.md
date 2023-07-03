@@ -159,20 +159,6 @@ create database grafana;
 create database quality_check_data;
 ```
 
-Pour la base de données `quality_check_data`, il est nécéssaire d'ajuster les permissions. En effet, Grafana ne filtre pas les requêtes envoyées à la base de données, il faut donc créer un utilisateur avec un minimum de permissions.
-
-Une fois connecté à la bonne base de données :
-
-```sql
-revoke all on schema public from public;
-
-create user grafana_reader with password '<mdp>';
-
-grant connect on database quality_check_data to grafana_reader;
-grant usage on schema public to grafana_reader;
-grant select on all tables in schema public to grafana_reader;
-```
-
 #### Importation du schéma
 
 Pour que le script puisse fonctionner, il est nécéssaire d'importer le [schéma](../database/schema.sql) :
@@ -191,6 +177,22 @@ Et finalement, créer les indexes. Sachez cependant qu'il est recommandé de les
 
 ```sh
 psql -d quality_check_data -f create_indexes.sql
+```
+
+### Ajustement des permissions
+
+Une fois que le schéma a été importé et que toutes les tables ont été crées dans la base de données `quality_check_data`, il est nécéssaire d'ajuster les permissions. En effet, Grafana ne filtre pas les requêtes envoyées à la base de données, il faut donc créer un utilisateur avec un minimum de permissions.
+
+Une fois connecté à la bonne base de données :
+
+```sql
+revoke all on schema public from public;
+
+create user grafana_reader with password 'grafana';
+
+grant connect on database quality_check_data to grafana_reader;
+grant usage on schema public to grafana_reader;
+grant select on all tables in schema public to grafana_reader;
 ```
 
 ### Installation de Grafana
