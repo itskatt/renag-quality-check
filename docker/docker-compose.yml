@@ -28,6 +28,7 @@ services:
   grafana-renderer:
     image: grafana/grafana-image-renderer:latest
     container_name: grafana-image-renderer
+    restart: unless-stopped
     depends_on:
       - grafana
     ports:
