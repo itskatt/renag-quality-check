@@ -1,8 +1,6 @@
 # Documentation RENAG quality check
 
-## Utilisation du *dashboard*
-
-TODO définition du cdc
+Quelques intructions axées sur les besoins du laboratoire Géoazur pour l'utilisation et la configuration de leur [instance de Grafana](http://gnssfr.unice.fr/quality-check/).
 
 ### Assigner une couleur à une courbe.
 
@@ -19,13 +17,6 @@ Un menu s'ouvre vous invitant à choisir la couleur de la courbe :
 Il est possible de rentrer la couleur qu'on veut :
 
 ![Color picker](img/click_couleur_custom.png)
-
-### Administration
-
-TODO
-
-- Compte admin
-- Ajouter des utilisateurs
 
 ## Ajout d'un nouveau réseau
 
