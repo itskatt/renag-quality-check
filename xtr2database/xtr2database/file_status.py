@@ -61,11 +61,16 @@ def file_status(args, db_connection):
     process_files("xtr", xtr_files.rglob(pattern), get_xtr_file_date, get_xtr_file_stem_station_id, data)
 
     # Insertion dans la base de données
-    print("Insertion dans la base de données...")
     fetcher = DatabaseFetcher()
     to_insert_params = []
     with db_connection() as conn:
         with conn.cursor() as cur:
+            if args.override:
+                print("Suppression des données pré-existantes...")
+                cur.execute("delete from file_status;")
+
+            print("Insertion dans la base de données...")
+
             # Récupération du réseau
             network_id = fetcher.get_network_id(cur, args.network)
 
