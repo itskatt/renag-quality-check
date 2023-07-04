@@ -176,5 +176,6 @@ create table file_status (
         constraint file_status_id_fk references station
         on delete cascade,
     has_rinex3 boolean not null default false,
-    has_xtr boolean not null default false
+    has_xtr boolean not null default false,
+    unique (date, station_id)
 );
