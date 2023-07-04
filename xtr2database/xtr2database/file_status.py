@@ -45,8 +45,6 @@ def _data_dict_default_factory():
 
 
 def file_status(args, db_connection):
-    # TODO verif db ?
-
     # Rassemblement des informations
     rinex_files = args.rinex3_files
     xtr_files = args.xtr_files

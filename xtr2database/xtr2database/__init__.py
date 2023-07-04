@@ -64,7 +64,7 @@ def get_args():
         action="store_true",
     )
 
-    subparsers = parser.add_subparsers(dest="mode")
+    subparsers = parser.add_subparsers(dest="mode", required=True)
 
     # importation des fichiers xtr
     xtr_import = subparsers.add_parser("import", help="Importe les fichiers xtr d'un réseau de station")
@@ -127,7 +127,5 @@ def main():
 
     if args.mode == "import":
         xtr_import(args, db_connection)
-    elif args.mode == "file_status":
+    else:  # forcement file_status
         file_status(args, db_connection)
-    else:
-        print("???")  # TODO : vrai message d'erreur
