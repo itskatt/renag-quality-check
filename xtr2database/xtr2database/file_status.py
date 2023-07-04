@@ -25,6 +25,7 @@ from collections import defaultdict
 
 from .extractors import (get_rinex3_file_date, get_rinex3_station_id,
                          get_xtr_file_date, get_xtr_file_stem_station_id)
+from .database import DatabaseFetcher
 
 
 def process_files(file_type, files_gen, get_date, get_station, data_dict):
@@ -44,7 +45,7 @@ def _data_dict_default_factory():
 
 
 def file_status(args, db_connection):
-    # TODO verif db
+    # TODO verif db ?
 
     # Rassemblement des informations
     rinex_files = args.rinex3_files
@@ -60,5 +61,33 @@ def file_status(args, db_connection):
     process_files("xtr", xtr_files.rglob(pattern), get_xtr_file_date, get_xtr_file_stem_station_id, data)
 
     # Insertion dans la base de données
-    # TODO
-    print(data)
+    print("Insertion dans la base de données...")
+    fetcher = DatabaseFetcher()
+    to_insert_params = []
+    with db_connection() as conn:
+        with conn.cursor() as cur:
+            # Récupération du réseau
+            network_id = fetcher.get_network_id(cur, args.network)
+
+            for station_fullname, station_data in data.items():
+                station_id = fetcher.get_station_id(cur, station_fullname, network_id)
+
+                for date, date_data in station_data.items():
+                    to_insert_params.append({
+                        "date": date,
+                        "station_id": station_id,
+                        "rinex": date_data["rinex"],
+                        "xtr": date_data["xtr"],
+                    })
+
+            cur.executemany(
+                """--sql
+                insert into file_status (date, station_id, has_rinex3, has_xtr)
+                values (%(date)s, %(station_id)s, %(rinex)s, %(xtr)s)
+                on conflict (date, station_id) do update
+                set has_rinex3 = %(rinex)s, has_xtr = %(xtr)s;
+                """,
+                to_insert_params
+            )
+
+    print("OK !")
