@@ -127,5 +127,7 @@ def main():
 
     if args.mode == "import":
         xtr_import(args, db_connection)
-    else:  # forcement file_status
+    elif args.mode == "file_status":
         file_status(args, db_connection)
+    else:
+        print("???")  # TODO : vrai message d'erreur
