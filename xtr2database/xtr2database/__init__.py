@@ -252,35 +252,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser("xtr2database")
 
-    parser.add_argument(
-        "xtr_files",
-        help="Sources des fichiers xtr à traiter",
-        type=Path
-    )
-
-    parser.add_argument(
-        "network",
-        help="Le réseau de station dont proviennent les fichiers"
-    )
-
-    parser.add_argument(
-        "-o", "--override",
-        help="Ecrase toute les données du réseau de station avant de les insérer",
-        action="store_true"
-    )
-
-    parser.add_argument(
-        "--parallel",
-        help="Traite les stations en parallèle sur plusieurs processus. Experimental",
-        action="store_true"
-    )
-
-    parser.add_argument(
-        "-z", "--gziped",
-        help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse-les à la volée",
-        action="store_true"
-    )
-
+    # arguments communs
     parser.add_argument(
         "-H", "--remote-host",
         help="Spécifie l'adresse du serveur pour se connecter à la base de données"
@@ -299,6 +271,64 @@ def get_args():
     parser.add_argument(
         "-P", "--password",
         help="Spécifie le mot de passe à utiliser pour se connecter à la base de données"
+    )
+
+    parser.add_argument(
+        "-o", "--override",
+        help="Ecrase toute les données du réseau de station avant de les insérer",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "-z", "--gziped",
+        help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse-les à la volée si besoin",
+        action="store_true"
+    )
+
+    subparsers = parser.add_subparsers(dest="mode")
+
+    # importation des fichiers xtr
+    xtr_import = subparsers.add_parser(
+        "import",
+        help="Importe les fichiers xtr d'un réseau de station"
+    )
+
+    xtr_import.add_argument(
+        "xtr_files",
+        help="Sources des fichiers xtr à traiter",
+        type=Path
+    )
+
+    xtr_import.add_argument(
+        "network",
+        help="Le réseau de station dont proviennent les fichiers"
+    )
+
+    xtr_import.add_argument(
+        "--parallel",
+        help="Traite les stations en parallèle sur plusieurs processus. Experimental",
+        action="store_true"
+    )
+
+    # verification de la disponibilité des fichiers
+    file_status = subparsers.add_parser(
+        "file_status",
+        help="Verifie la présence des fichiers xtr et Rinex 3 d'un réseau de stations"
+    )
+
+    file_status.add_argument(
+        "rinex3_files",
+        help="Source des fichiers Rinex 3 à vérifier",
+    )
+
+    file_status.add_argument(
+        "xtr_files",
+        help="Source des fichiers xtr à vérifier",
+    )
+
+    file_status.add_argument(
+        "network",
+        help="Le réseau de station dont proviennent les fichiers",
     )
 
     return parser.parse_args()
@@ -339,29 +369,7 @@ def strict_insert(cur, args):
     return get_all_files(args.xtr_files, blacklisted_files, gziped=args.gziped)
 
 
-def main():
-    """
-    Programme principal.
-    """
-    args = get_args()
-
-    # Les arguments CLI sont prioritaire sur les variables d'env
-    if not args.user:
-        try:
-            user = os.environ["X2D_USER"]
-        except KeyError:
-            print(
-                "Erreur : pas d'utilisateur spécifié (ni dans la variable "
-                "d'environement X2D_USER ni en argument de ligne de commande)"
-            )
-            sys.exit(-1)
-    else:
-        user = args.user
-
-    password = args.password or os.environ.get("X2D_PASSWORD")
-
-    db_connection = create_db_connection(user, password, args.remote_host, args.port)
-
+def xtr_import(args, db_connection):
     with db_connection() as conn:
         with conn.cursor() as cur:
 
@@ -388,3 +396,30 @@ def main():
         process_sequencial(db_connection, stations, args.network, args.gziped)
 
     print("OK !")
+
+
+def main():
+    """
+    Programme principal.
+    """
+    args = get_args()
+
+    # Les arguments CLI sont prioritaire sur les variables d'env
+    if not args.user:
+        try:
+            user = os.environ["X2D_USER"]
+        except KeyError:
+            print(
+                "Erreur : pas d'utilisateur spécifié (ni dans la variable "
+                "d'environement X2D_USER ni en argument de ligne de commande)"
+            )
+            sys.exit(-1)
+    else:
+        user = args.user
+
+    password = args.password or os.environ.get("X2D_PASSWORD")
+
+    db_connection = create_db_connection(user, password, args.remote_host, args.port)
+
+    if args.mode == "import":
+        xtr_import(args, db_connection)
