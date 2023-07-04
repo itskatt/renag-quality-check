@@ -141,7 +141,7 @@
           "showLegend": false
         },
         "rowHeight": 0.9,
-        "showValue": "auto",
+        "showValue": "never",
         "tooltip": {
           "mode": "single",
           "sort": "none"
@@ -250,6 +250,6 @@
   "timezone": "",
   "title": "Data integrity",
   "uid": "b0dd94a7-e766-4ae2-b824-dc889e06e0b8",
-  "version": 6,
+  "version": 10,
   "weekStart": ""
 }
