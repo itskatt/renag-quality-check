@@ -23,8 +23,7 @@ SOFTWARE.
 """
 from collections import defaultdict
 
-from .extractors import (get_rinex3_file_date, get_rinex3_station_id,
-                         get_xtr_file_date, get_xtr_file_stem_station_id)
+from .extractors import get_rinex3_file_date, get_rinex3_station_id, get_xtr_file_date, get_xtr_file_stem_station_id
 from .database import DatabaseFetcher
 
 
@@ -38,10 +37,7 @@ def process_files(file_type, files_gen, get_date, get_station, data_dict):
 
 def _data_dict_default_factory():
     #        V Date
-    return defaultdict(lambda: {
-        "rinex": False,
-        "xtr": False
-    })
+    return defaultdict(lambda: {"rinex": False, "xtr": False})
 
 
 def file_status(args, db_connection):
@@ -76,12 +72,14 @@ def file_status(args, db_connection):
                 station_id = fetcher.get_station_id(cur, station_fullname, network_id)
 
                 for date, date_data in station_data.items():
-                    to_insert_params.append({
-                        "date": date,
-                        "station_id": station_id,
-                        "rinex": date_data["rinex"],
-                        "xtr": date_data["xtr"],
-                    })
+                    to_insert_params.append(
+                        {
+                            "date": date,
+                            "station_id": station_id,
+                            "rinex": date_data["rinex"],
+                            "xtr": date_data["xtr"],
+                        }
+                    )
 
             cur.executemany(
                 """--sql
@@ -90,7 +88,7 @@ def file_status(args, db_connection):
                 on conflict (date, station_id) do update
                 set has_rinex3 = %(rinex)s, has_xtr = %(xtr)s;
                 """,
-                to_insert_params
+                to_insert_params,
             )
 
     print("OK !")

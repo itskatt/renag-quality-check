@@ -154,13 +154,15 @@ class DatabaseFetcher:
             select id, lat
             from station
             where network_id = {network_id} and fullname = %s;
-            """, (station_fullname,))
+            """,
+            (station_fullname,),
+        )
         res = cur.fetchone()
 
         if not res:
             cur.execute(
                 "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
-                (network_id, station_fullname[:4], station_fullname, station_lat, station_long)
+                (network_id, station_fullname[:4], station_fullname, station_lat, station_long),
             )
             obj_id = cur.fetchone()["id"]
         else:
@@ -174,7 +176,7 @@ class DatabaseFetcher:
                     set lat = %s, long = %s
                     where id = {obj_id};
                     """,
-                    (station_lat, station_long)
+                    (station_lat, station_long),
                 )
 
         self._database_fetch_cache[station_fullname] = obj_id

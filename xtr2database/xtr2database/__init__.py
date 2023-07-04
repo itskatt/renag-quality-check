@@ -82,17 +82,9 @@ def get_args():
         "file_status", help="Verifie la présence des fichiers xtr et Rinex 3 d'un réseau de stations"
     )
 
-    file_status.add_argument(
-        "rinex3_files",
-        help="Source des fichiers Rinex 3 à vérifier",
-        type=Path
-    )
+    file_status.add_argument("rinex3_files", help="Source des fichiers Rinex 3 à vérifier", type=Path)
 
-    file_status.add_argument(
-        "xtr_files",
-        help="Source des fichiers xtr à vérifier",
-        type=Path
-    )
+    file_status.add_argument("xtr_files", help="Source des fichiers xtr à vérifier", type=Path)
 
     file_status.add_argument(
         "network",
