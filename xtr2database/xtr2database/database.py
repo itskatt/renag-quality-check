@@ -132,3 +132,19 @@ class DatabaseFetcher:
             "insert into observation_type (type) values (%s) returning id;",
             (observation_type,),
         )
+
+    def get_station_id(self, cur, station_fullname, network_id, station_lat, station_long):
+        """
+        Récupère l'ID d'une station à partir de la base de données.
+        """
+        return self.fetch_or_create(
+            cur,
+            station_fullname,
+            f"""--sql
+            select id
+            from station
+            where network_id = {network_id} and fullname = %s;
+            """,
+            "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
+            (network_id, station_fullname[:4], station_fullname, station_lat, station_long),
+        )

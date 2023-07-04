@@ -139,17 +139,7 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network_n
     # récupération de la station
     station_lat, station_long = data[2]
 
-    station_id = fetcher.fetch_or_create(
-        cur,
-        station_fullname,
-        f"""--sql
-        select id
-        from station
-        where network_id = {network_id} and fullname = %s;
-        """,
-        "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
-        (network_id, station_fullname[:4], station_fullname, station_lat, station_long),
-    )
+    station_id = fetcher.get_station_id(cur, station_fullname, network_id, station_lat, station_long)
 
     # Insertion des données de la station
     for time_serie in data[0]:  # en premier les séries temporelles
