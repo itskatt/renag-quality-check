@@ -6,10 +6,10 @@ Ce script à pour but d'importer les données situées dans des fichiers de qual
 
 > **NOTE :** Le script requiert la version 3.7 de Python minimum pour fonctionner, idéalement la version 3.11.
 
-Le script s'installe avec la commande suivante, [git](https://git-scm.com/) est requis :
+Le script s'installe et se met à jour avec la commande suivante, [git](https://git-scm.com/) est requis :
 
 ```bash
-pip install git+https://gitlab.oca.eu/AstroGeoGPM/renag-qc#subdirectory=xtr2database
+pip install -U git+https://gitlab.oca.eu/AstroGeoGPM/renag-qc#subdirectory=xtr2database
 ```
 
 Vous pouvez maintenant utiliser le script ! Testez qu'il soit bien installé avec la commande suivante :
