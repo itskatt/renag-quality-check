@@ -133,9 +133,23 @@ class DatabaseFetcher:
             (observation_type,),
         )
 
-    def get_station_id(self, cur, station_fullname, network_id, station_lat, station_long):
+    def get_network_id(self, cur, network_name):
+        """
+        Récupère l'ID d'un réseau de station à partir de la base de données.
+        """
+        return self.fetch_or_create(
+            cur,
+            network_name,
+            "select id from network where name = %s;",
+            "insert into network (name) values (%s) returning id;",
+            (network_name,),
+        )
+
+    def get_station_id(self, cur, station_fullname, network_id, station_lat=None, station_long=None):
         """
         Récupère l'ID d'une station à partir de la base de données.
+
+        TODO : si pas de coords essayer de les mettre à jour
         """
         return self.fetch_or_create(
             cur,

@@ -128,13 +128,7 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network_n
     """
 
     # lien avec le réseau
-    network_id = fetcher.fetch_or_create(
-        cur,
-        station_network_name,
-        "select id from network where name = %s;",
-        "insert into network (name) values (%s) returning id;",
-        (station_network_name,),
-    )
+    network_id = fetcher.get_network_id(cur, station_network_name)
 
     # récupération de la station
     station_lat, station_long = data[2]
