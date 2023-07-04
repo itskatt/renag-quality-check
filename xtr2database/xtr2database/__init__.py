@@ -28,6 +28,7 @@ from pathlib import Path
 
 from .database import create_db_connection
 from .xtr_import import xtr_import
+from .file_status import file_status
 
 
 def get_args():
@@ -84,11 +85,13 @@ def get_args():
     file_status.add_argument(
         "rinex3_files",
         help="Source des fichiers Rinex 3 à vérifier",
+        type=Path
     )
 
     file_status.add_argument(
         "xtr_files",
         help="Source des fichiers xtr à vérifier",
+        type=Path
     )
 
     file_status.add_argument(
@@ -124,3 +127,5 @@ def main():
 
     if args.mode == "import":
         xtr_import(args, db_connection)
+    else:  # forcement file_status
+        file_status(args, db_connection)

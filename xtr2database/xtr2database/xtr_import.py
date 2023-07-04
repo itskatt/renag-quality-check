@@ -33,7 +33,7 @@ from multiprocessing import Manager
 from tqdm import tqdm
 
 from .database import DatabaseFetcher, clear_tables
-from .extractors import get_file_date, get_station_coords, get_station_id
+from .extractors import get_xtr_file_date, get_station_coords, get_xtr_station_id
 from .metrics import TimeSeries, common, create_metric_dest, cycle_slip, extract_from_section_header_into, skyplot
 
 
@@ -68,7 +68,7 @@ def get_station_data(files, gziped=False):
     # Extraction des informations des fichiers
     for file in files:
         filename = file.split(".")[-3 if gziped else -2].rpartition(os.sep)[-1]
-        current_date = get_file_date(filename)
+        current_date = get_xtr_file_date(filename)
 
         parsed_sections = 0
         with opener(file, encoding="ascii") as f:  # l'encodage ascii est le plus rapide
@@ -186,7 +186,7 @@ def get_all_files(infiles, blacklist=None, *, gziped=False):
     pattern = "*.xtr.gz" if gziped else "*.xtr"
 
     flattened = [f for f in infiles.rglob(pattern) if str(f.name).split(".")[0] not in blacklist]
-    flattened.sort(key=get_station_id)
+    flattened.sort(key=get_xtr_station_id)
 
     return flattened
 
@@ -294,7 +294,7 @@ def xtr_import(args, db_connection):
 
     # groupement des fichiers par station
     stations = []
-    for key, group in groupby(all_files, get_station_id):
+    for key, group in groupby(all_files, get_xtr_station_id):
         stations.append((key, list(str(f.resolve()) for f in group)))  # type: ignore
 
     if args.parallel:

@@ -24,7 +24,7 @@ SOFTWARE.
 from datetime import datetime
 
 
-def get_file_date(file_stem):
+def get_xtr_file_date(file_stem):
     """
     Renvoie la date d'un fichier xtr.
     """
@@ -33,11 +33,29 @@ def get_file_date(file_stem):
     return parsed.date()
 
 
-def get_station_id(file):
+def get_xtr_station_id(file):
     """
-    Renvoie l'identifiant d'une station en fonction de son nom de fichier.
+    Renvoie l'identifiant d'une station en fonction de son nom de fichier (xtr).
     """
     return file.stem.split("-", 1)[0]
+
+
+def get_xtr_file_stem_station_id(file_stem):
+    return file_stem.split("-", 1)[0]
+
+
+def get_rinex3_file_date(file_stem):
+    date_part = file_stem.split("_")[2]
+
+    year = int(date_part[:4])
+    day_number = int(date_part[4:7])
+
+    parsed = datetime.strptime(f"{year} {day_number}", "%Y %j")
+    return parsed.date()
+
+
+def get_rinex3_station_id(file_stem):
+    return file_stem.split("_")[0]
 
 
 def get_station_coords(f):

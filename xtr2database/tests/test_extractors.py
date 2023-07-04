@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from xtr2database.extractors import get_file_date, get_station_coords, get_station_id
+from xtr2database.extractors import get_xtr_file_date, get_station_coords, get_xtr_station_id
 
 
 @pytest.mark.parametrize(
@@ -19,18 +19,18 @@ from xtr2database.extractors import get_file_date, get_station_coords, get_stati
     ],
 )
 def test_get_file_date(file_stem, expected):
-    assert get_file_date(file_stem) == expected
+    assert get_xtr_file_date(file_stem) == expected
 
 
 @pytest.mark.parametrize("file_stem", ["file-2023-31-05.xtr", "file-2023-ss", "file-2023-05-ss", "file-2023-05-ss.xtr"])
 def test_get_file_date_bad_arguments(file_stem):
     with pytest.raises(ValueError):
-        get_file_date(file_stem)
+        get_xtr_file_date(file_stem)
 
 
 def test_get_station_id():
     file = Path("ADER00FRA-2023-01-02.xtr")
-    assert get_station_id(file) == "ADER00FRA"
+    assert get_xtr_station_id(file) == "ADER00FRA"
 
 
 @pytest.fixture
