@@ -177,7 +177,7 @@
           }
         }
       ],
-      "title": "Status test",
+      "title": "File availability status",
       "transformations": [
         {
           "id": "groupingToMatrix",
@@ -250,6 +250,6 @@
   "timezone": "",
   "title": "Data integrity",
   "uid": "b0dd94a7-e766-4ae2-b824-dc889e06e0b8",
-  "version": 10,
+  "version": 11,
   "weekStart": ""
 }
