@@ -1,7 +1,7 @@
 [project]
 name = "xtr2database"
 description = "Script d'alimentation de la base de données."
-version = "1.0"
+version = "2.0"
 authors = [
     { name = "Raphaël Caldwell", email = "raphael.caldwell@etu.univ-cotedazur.fr" }
 ]
