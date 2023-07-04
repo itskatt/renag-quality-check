@@ -148,17 +148,35 @@ class DatabaseFetcher:
     def get_station_id(self, cur, station_fullname, network_id, station_lat=None, station_long=None):
         """
         Récupère l'ID d'une station à partir de la base de données.
-
-        TODO : si pas de coords essayer de les mettre à jour
         """
-        return self.fetch_or_create(
-            cur,
-            station_fullname,
+        cur.execute(
             f"""--sql
-            select id
+            select id, lat
             from station
             where network_id = {network_id} and fullname = %s;
-            """,
-            "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
-            (network_id, station_fullname[:4], station_fullname, station_lat, station_long),
-        )
+            """, (station_fullname,))
+        res = cur.fetchone()
+
+        if not res:
+            cur.execute(
+                "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
+                (network_id, station_fullname[:4], station_fullname, station_lat, station_long)
+            )
+            obj_id = cur.fetchone()["id"]
+        else:
+            obj_id = res["id"]
+
+            # si la station ne possède pas de coordonées, on les rajoute
+            if not res["lat"] and station_lat:
+                cur.execute(
+                    f"""--sql
+                    update station
+                    set lat = %s, long = %s
+                    where id = {obj_id};
+                    """,
+                    (station_lat, station_long)
+                )
+
+        self._database_fetch_cache[station_fullname] = obj_id
+
+        return obj_id
