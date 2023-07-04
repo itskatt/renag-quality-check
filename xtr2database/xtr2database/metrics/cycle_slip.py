@@ -28,7 +28,7 @@ from psycopg.sql import SQL, Identifier
 
 from . import TimeSeries
 
-try: # Compatibilité python 3.7
+try:  # Compatibilité python 3.7
     from statistics import fmean as mean  # type: ignore
 except ImportError:
     from statistics import mean
@@ -44,14 +44,14 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
     # On va jusqu'a la partie interessante
     while not line.startswith("#G"):
         line = next(f)
-    next(f) # seconde ligne
+    next(f)  # seconde ligne
 
     extracted = {}
     line = next(f)
     while line.startswith("="):
         splitted = line.split()
 
-        constel = splitted[0][1:4] # GPS par ex
+        constel = splitted[0][1:4]  # GPS par ex
         havep = int(splitted[4]) if splitted[4] != "-" else 0
         csall = int(splitted[9]) if splitted[9] != "-" else 0
 
@@ -59,8 +59,8 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
         line = next(f)
 
     # suite des données pour le observation cs
-    next(f) # ligne vide
-    next(f) # entête
+    next(f)  # ligne vide
+    next(f)  # entête
     line = next(f)
     curr_constel = ""
     while line.startswith("="):
@@ -70,7 +70,7 @@ def extract_from_sum_stats(f, observation_dest, satellite_dest, current_date):
         if constel == curr_constel:
             line = next(f)
             continue
-            
+
         curr_constel = constel
         expobs = int(splitted[4]) if splitted[4] != "-" else 1
         extracted[constel][2] = expobs
@@ -111,7 +111,7 @@ def extract_from_prepro_res(f, satellite_dest, skyplot_dest, nb_constell, curren
     line = next(f)
 
     count = defaultdict(int)
-    while line != "\n": # NOTE : ici on arrive juste avant la section "Elevation & Azimuth"
+    while line != "\n":  # NOTE : ici on arrive juste avant la section "Elevation & Azimuth"
         splitted = line.split()
 
         constel = line[1:4]
@@ -128,7 +128,7 @@ def extract_from_prepro_res(f, satellite_dest, skyplot_dest, nb_constell, curren
     sat_data = satellite_dest["data"]
     for i in range(satellite_dest["length"] - nb_constell, satellite_dest["length"]):
         constel = sat_data["constellation"][i]
-        sat_data["nb_sat"].append(count[constel]) # si rien alors 0 (parfait)
+        sat_data["nb_sat"].append(count[constel])  # si rien alors 0 (parfait)
 
 
 def extract_from_band_avail(f, satellite_dest, nb_constell):
@@ -137,7 +137,7 @@ def extract_from_band_avail(f, satellite_dest, nb_constell):
     calculs du satellite cs.
     """
     line = next(f)
-    while not line.startswith("#N"): # #NxBAND
+    while not line.startswith("#N"):  # #NxBAND
         line = next(f)
     line = next(f)
 
@@ -167,16 +167,14 @@ def insert_observation(cur, fetcher, station_id, observation_cs):
     for i in range(observation_cs["length"]):
         constellation_id = fetcher.get_constellation_id(cur, data["constellation"][i])
 
-        row = cur.mogrify(
-            "(%s,%s,%s,%s)",
-            (data["date"][i], station_id, constellation_id, data["value"][i])
-        )
+        row = cur.mogrify("(%s,%s,%s,%s)", (data["date"][i], station_id, constellation_id, data["value"][i]))
         to_insert.append(row)
 
     cur.execute(
         SQL("insert into {}(date, station_id, constellation_id, value) values ")
-        .format(Identifier(TimeSeries.OBSERVATION_CS.value)).as_string(cur) +
-        ",".join(to_insert)
+        .format(Identifier(TimeSeries.OBSERVATION_CS.value))
+        .as_string(cur)
+        + ",".join(to_insert)
     )
 
 
@@ -192,14 +190,17 @@ def insert_satellite(cur, fetcher, station_id, satellite_cs):
         row = cur.mogrify(
             "(%s,%s,%s,%s)",
             (
-                data["date"][i], station_id, constellation_id,
-                data["nb_sat"][i] / data["avg_sat"][i] / data["havep"][i] * 100
-            )
+                data["date"][i],
+                station_id,
+                constellation_id,
+                data["nb_sat"][i] / data["avg_sat"][i] / data["havep"][i] * 100,
+            ),
         )
         to_insert.append(row)
 
     cur.execute(
         SQL("insert into {}(date, station_id, constellation_id, value) values ")
-        .format(Identifier(TimeSeries.SATELLITE_CS.value)).as_string(cur) +
-        ",".join(to_insert)
+        .format(Identifier(TimeSeries.SATELLITE_CS.value))
+        .as_string(cur)
+        + ",".join(to_insert)
     )

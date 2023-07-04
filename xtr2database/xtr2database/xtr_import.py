@@ -34,8 +34,7 @@ from tqdm import tqdm
 
 from .database import DatabaseFetcher, clear_tables
 from .extractors import get_file_date, get_station_coords, get_station_id
-from .metrics import (TimeSeries, common, create_metric_dest, cycle_slip,
-                      extract_from_section_header_into, skyplot)
+from .metrics import TimeSeries, common, create_metric_dest, cycle_slip, extract_from_section_header_into, skyplot
 
 
 def get_station_data(files, gziped=False):
@@ -82,48 +81,44 @@ def get_station_data(files, gziped=False):
                 if parsed_sections == 7:
                     break
 
-                elif line.startswith("#====== Summary statistics"): # type: ignore
+                elif line.startswith("#====== Summary statistics"):  # type: ignore
                     nb_constell = cycle_slip.extract_from_sum_stats(f, observation_cs, satellite_cs, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Estimated values"): # type: ignore
+                elif line.startswith("#====== Estimated values"):  # type: ignore
                     if station_coords[0] is None:
                         station_coords = get_station_coords(f)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Band available"): # type: ignore
+                elif line.startswith("#====== Band available"):  # type: ignore
                     cycle_slip.extract_from_band_avail(f, satellite_cs, nb_constell)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Preprocessing results"): # type: ignore
+                elif line.startswith("#====== Preprocessing results"):  # type: ignore
                     cycle_slip.extract_from_prepro_res(f, satellite_cs, skyplot_data, nb_constell, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Elevation & Azimuth"): # type: ignore
+                elif line.startswith("#====== Elevation & Azimuth"):  # type: ignore
                     skyplot.extract_elevation_azimut(f, skyplot_data, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Code multipath"): # type: ignore
+                elif line.startswith("#====== Code multipath"):  # type: ignore
                     if extract_from_section_header_into(f, multipath_data, current_date):
                         skyplot.extract_multipath(f, skyplot_data, current_date)
                     parsed_sections += 1
 
-                elif line.startswith("#====== Signal to noise ratio"): # type: ignore
+                elif line.startswith("#====== Signal to noise ratio"):  # type: ignore
                     if extract_from_section_header_into(f, sig2noise_data, current_date):
                         skyplot.extract_sig2noise(f, skyplot_data, current_date)
                     parsed_sections += 1
 
         inserted_files.append(filename)
 
-    return ((
-            sig2noise_data,
-            multipath_data,
-            observation_cs,
-            satellite_cs
-        ),
+    return (
+        (sig2noise_data, multipath_data, observation_cs, satellite_cs),
         skyplot_data,
         station_coords,
-        inserted_files
+        inserted_files,
     )
 
 
@@ -132,32 +127,32 @@ def insert_into_database(cur, fetcher, data, station_fullname, station_network_n
     Insère toute les données d'une station dans la base de données.
     """
 
-    # lien avec le réseau 
+    # lien avec le réseau
     network_id = fetcher.fetch_or_create(
-        cur, station_network_name,
+        cur,
+        station_network_name,
         "select id from network where name = %s;",
-
         "insert into network (name) values (%s) returning id;",
-        (station_network_name,)
+        (station_network_name,),
     )
 
     # récupération de la station
     station_lat, station_long = data[2]
 
     station_id = fetcher.fetch_or_create(
-        cur, station_fullname,
+        cur,
+        station_fullname,
         f"""--sql
         select id
         from station
         where network_id = {network_id} and fullname = %s;
         """,
-
         "insert into station (network_id, shortname, fullname, lat, long) values (%s, %s , %s, %s, %s) returning id;",
-        (network_id, station_fullname[:4], station_fullname, station_lat, station_long)
+        (network_id, station_fullname[:4], station_fullname, station_lat, station_long),
     )
 
     # Insertion des données de la station
-    for time_serie in data[0]: # en premier les séries temporelles
+    for time_serie in data[0]:  # en premier les séries temporelles
         if time_serie["type"] == TimeSeries.OBSERVATION_CS.value:
             cycle_slip.insert_observation(cur, fetcher, station_id, time_serie)
 
@@ -239,7 +234,10 @@ def process_parallel(db_connection, stations, network, gziped):
 
         with ProcessPoolExecutor() as executor:
             # NOTE : ne pas oublier de mettre a jour en fonction de la signature de process_station
-            futures = [executor.submit(process_station, name, files, network, dict(lock=lock, gziped=gziped)) for name, files in stations]
+            futures = [
+                executor.submit(process_station, name, files, network, dict(lock=lock, gziped=gziped))
+                for name, files in stations
+            ]
             for _ in as_completed(futures):
                 pbar.update(1)
 
@@ -269,7 +267,7 @@ def strict_insert(cur, args):
         inner join network n on n.id = s.network_id
         where n.name = %s;
         """,
-        (args.network,)
+        (args.network,),
     )
     res = cur.fetchall()
 
@@ -282,7 +280,6 @@ def strict_insert(cur, args):
 def xtr_import(args, db_connection):
     with db_connection() as conn:
         with conn.cursor() as cur:
-
             if args.override:
                 all_files = override_insert(cur, args)
 
@@ -298,7 +295,7 @@ def xtr_import(args, db_connection):
     # groupement des fichiers par station
     stations = []
     for key, group in groupby(all_files, get_station_id):
-        stations.append((key, list(str(f.resolve()) for f in group))) # type: ignore
+        stations.append((key, list(str(f.resolve()) for f in group)))  # type: ignore
 
     if args.parallel:
         process_parallel(db_connection, stations, args.network, args.gziped)

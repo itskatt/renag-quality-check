@@ -29,6 +29,7 @@ class TimeSeries(Enum):
     """
     Toutes les séries temporelles disponibles.
     """
+
     SIG2NOISE = "sig2noise"
     MULTIPATH = "multipath"
     OBSERVATION_CS = "observation_cs"
@@ -39,11 +40,7 @@ def create_metric_dest(metric_type: TimeSeries):
     """
     Crée un dictionnaire qui contiendra les données d'une métrique.
     """
-    return {
-        "type": metric_type.value,
-        "length": 0,
-        "data": defaultdict(list)
-    }
+    return {"type": metric_type.value, "length": 0, "data": defaultdict(list)}
 
 
 def extract_from_section_header_into(f, dest, current_date):
@@ -79,7 +76,7 @@ def extract_from_section_header_into(f, dest, current_date):
 
         data["date"].append(current_date)
         data["constellation"].append(band[:3])  # shortname
-        data["observation_type"].append(band[-2:]) # 2 derniers caractères
+        data["observation_type"].append(band[-2:])  # 2 derniers caractères
         data["value"].append(value)
 
     return bool(extracted)

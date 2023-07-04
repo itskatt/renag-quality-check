@@ -6,8 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from xtr2database.extractors import (get_file_date, get_station_coords,
-                                     get_station_id)
+from xtr2database.extractors import get_file_date, get_station_coords, get_station_id
 
 
 @pytest.mark.parametrize(
@@ -16,22 +15,14 @@ from xtr2database.extractors import (get_file_date, get_station_coords,
         ("ADER00FRA-2023-01-02", date(2023, 1, 2)),
         ("ADER00FRA-2023-12-31", date(2023, 12, 31)),
         ("ADER00FRA-2023-05-31", date(2023, 5, 31)),
-        ("BOUF00FRA-2023-05-01", date(2023, 5, 1))
-    ]
+        ("BOUF00FRA-2023-05-01", date(2023, 5, 1)),
+    ],
 )
 def test_get_file_date(file_stem, expected):
     assert get_file_date(file_stem) == expected
 
 
-@pytest.mark.parametrize(
-    "file_stem",
-    [
-        "file-2023-31-05.xtr",
-        "file-2023-ss",
-        "file-2023-05-ss",
-        "file-2023-05-ss.xtr"
-    ]
-)
+@pytest.mark.parametrize("file_stem", ["file-2023-31-05.xtr", "file-2023-ss", "file-2023-05-ss", "file-2023-05-ss.xtr"])
 def test_get_file_date_bad_arguments(file_stem):
     with pytest.raises(ValueError):
         get_file_date(file_stem)
@@ -44,7 +35,8 @@ def test_get_station_id():
 
 @pytest.fixture
 def file_with_blhgns():
-    data = dedent("""\
+    data = dedent(
+        """\
     =XYZGLO 2023-01-02 00:00:00     4687285.2234      31077.7674    4313523.3340     5.0     3.9     5.6    96     0
     =XYZGNS 2023-01-02 00:00:00     4687284.9409      31079.1006    4313523.3731     1.3     0.7     1.1    96     0
     =BLHGPS 2023-01-02 00:00:00     42.813272463     0.379895887       1788.8304     1.3     1.3     2.0    96     0
@@ -55,7 +47,8 @@ def file_with_blhgns():
     #POSGNS 2023-01-02 00:00:00           X [m]           Y [m]           Z [m]         B [deg]         L [deg]     H [m]   GDOP  PDOP  HDOP  VDOP      REC_CLK[m] #Sat #Excl
     POSGPS 2023-01-02 00:00:00     4687282.3898      31078.9649    4313520.6936    42.813270072     0.379893353 1785.0814   2.2   2.0   0.7   1.7             0.1    9     1
     POSGPS 2023-01-02 00:15:00 
-    """)
+    """
+    )
     return StringIO(data)
 
 
@@ -71,11 +64,13 @@ def test_get_station_coords(file_with_blhgns):
 
 @pytest.fixture
 def file_no_blhgns():
-    data = dedent("""\
+    data = dedent(
+        """\
     =BLHGLO 2023-01-02 00:00:00     42.813270222     0.379878487       1788.9486     3.2     5.3     6.8    96     0
 
     #POSGNS 2023-01-02 00:00:00           X [m]           Y [m]           Z [m]         B [deg]         L [deg]     H [m]   GDOP  PDOP  HDOP  VDOP      REC_CLK[m] #Sat #Excl
-    """)
+    """
+    )
     return StringIO(data)
 
 

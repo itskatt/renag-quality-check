@@ -40,8 +40,7 @@ def insert_header_section_metric(cur, fetcher, station_id, metric_data):
 
         # On colle tout ensemble
         row = cur.mogrify(
-            "(%s,%s,%s,%s,%s)",
-            (data["date"][i], station_id, constellation_id, observation_id, data["value"][i])
+            "(%s,%s,%s,%s,%s)", (data["date"][i], station_id, constellation_id, observation_id, data["value"][i])
         )
         to_insert.append(row)
 
@@ -49,6 +48,7 @@ def insert_header_section_metric(cur, fetcher, station_id, metric_data):
     if to_insert:
         cur.execute(
             SQL("insert into {}(date, station_id, constellation_id, observation_type_id, value) values ")
-            .format(Identifier(metric_data["type"])).as_string(cur) +
-            ",".join(to_insert)
+            .format(Identifier(metric_data["type"]))
+            .as_string(cur)
+            + ",".join(to_insert)
         )

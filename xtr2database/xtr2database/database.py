@@ -43,8 +43,8 @@ def create_db_connection(user, password, remote_host, port):
         user=user,
         password=password,
         row_factory=dict_row,
-        cursor_factory=ClientCursor
-    ) # type: ignore
+        cursor_factory=ClientCursor,
+    )  # type: ignore
 
 
 def clear_tables(cur, network):
@@ -71,6 +71,7 @@ class DatabaseFetcher:
     """
     Opérations de récupérations de la base de données, versions thread-safe et non.
     """
+
     _database_fetch_cache = {}
 
     def __init__(self, lock=None):
@@ -113,11 +114,11 @@ class DatabaseFetcher:
         Récupère l'ID d'une constellation à partir de la base de données.
         """
         return self.fetch_or_create(
-            cur, constellation_shortname,
+            cur,
+            constellation_shortname,
             "select id from constellation where shortname = %s;",
-
             "insert into constellation (fullname, shortname) values (%s, %s) returning id;",
-            (constellation_shortname, constellation_shortname)
+            (constellation_shortname, constellation_shortname),
         )
 
     def get_observation_id(self, cur, observation_type):
@@ -125,9 +126,9 @@ class DatabaseFetcher:
         Récupère l'ID d'un type d'observation à partir de la base de données.
         """
         return self.fetch_or_create(
-            cur, observation_type,
+            cur,
+            observation_type,
             "select id from observation_type where type = %s;",
-
             "insert into observation_type (type) values (%s) returning id;",
-            (observation_type,)
+            (observation_type,),
         )

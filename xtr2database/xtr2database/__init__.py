@@ -38,66 +38,47 @@ def get_args():
 
     # arguments communs
     parser.add_argument(
-        "-H", "--remote-host",
-        help="Spécifie l'adresse du serveur pour se connecter à la base de données"
+        "-H", "--remote-host", help="Spécifie l'adresse du serveur pour se connecter à la base de données"
+    )
+
+    parser.add_argument("-p", "--port", help="Spécifie le port pour se connecter à la base de données")
+
+    parser.add_argument("-U", "--user", help="Spécifie le nom d'utilisateur pour se connecter à la base de données")
+
+    parser.add_argument(
+        "-P", "--password", help="Spécifie le mot de passe à utiliser pour se connecter à la base de données"
     )
 
     parser.add_argument(
-        "-p", "--port",
-        help="Spécifie le port pour se connecter à la base de données"
-    )
-
-    parser.add_argument(
-        "-U", "--user",
-        help="Spécifie le nom d'utilisateur pour se connecter à la base de données"
-    )
-
-    parser.add_argument(
-        "-P", "--password",
-        help="Spécifie le mot de passe à utiliser pour se connecter à la base de données"
-    )
-
-    parser.add_argument(
-        "-o", "--override",
+        "-o",
+        "--override",
         help="Ecrase toute les données du réseau de station avant de les insérer",
-        action="store_true"
+        action="store_true",
     )
 
     parser.add_argument(
-        "-z", "--gziped",
+        "-z",
+        "--gziped",
         help="Recherche des fichiers .xtr.gz au lieux de .xtr, et décompresse-les à la volée si besoin",
-        action="store_true"
+        action="store_true",
     )
 
     subparsers = parser.add_subparsers(dest="mode")
 
     # importation des fichiers xtr
-    xtr_import = subparsers.add_parser(
-        "import",
-        help="Importe les fichiers xtr d'un réseau de station"
-    )
+    xtr_import = subparsers.add_parser("import", help="Importe les fichiers xtr d'un réseau de station")
+
+    xtr_import.add_argument("xtr_files", help="Sources des fichiers xtr à traiter", type=Path)
+
+    xtr_import.add_argument("network", help="Le réseau de station dont proviennent les fichiers")
 
     xtr_import.add_argument(
-        "xtr_files",
-        help="Sources des fichiers xtr à traiter",
-        type=Path
-    )
-
-    xtr_import.add_argument(
-        "network",
-        help="Le réseau de station dont proviennent les fichiers"
-    )
-
-    xtr_import.add_argument(
-        "--parallel",
-        help="Traite les stations en parallèle sur plusieurs processus. Experimental",
-        action="store_true"
+        "--parallel", help="Traite les stations en parallèle sur plusieurs processus. Experimental", action="store_true"
     )
 
     # verification de la disponibilité des fichiers
     file_status = subparsers.add_parser(
-        "file_status",
-        help="Verifie la présence des fichiers xtr et Rinex 3 d'un réseau de stations"
+        "file_status", help="Verifie la présence des fichiers xtr et Rinex 3 d'un réseau de stations"
     )
 
     file_status.add_argument(

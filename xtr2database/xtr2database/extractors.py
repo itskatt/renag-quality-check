@@ -49,14 +49,11 @@ def get_station_coords(f):
     while True:
         if line.startswith("=BLHGNS"):
             break
-        elif line == "\n": # Pas de BLHGNS
+        elif line == "\n":  # Pas de BLHGNS
             return None, None
 
         line = next(f)
 
     splitted = line.split()
 
-    return (
-        float(splitted[3]),
-        float(splitted[4])
-    )
+    return (float(splitted[3]), float(splitted[4]))

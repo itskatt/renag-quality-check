@@ -37,7 +37,7 @@ def _dd_callback():
         "mp": {},
         "sig2noise": {},
         # si ça a cs
-        "cs": {}
+        "cs": {},
     }
 
 
@@ -61,22 +61,19 @@ def _extract_coord(f, date, data):
     """
     Extrait l'evevation où l'azimut.
     """
-    next(f) # entête partie
+    next(f)  # entête partie
 
     line = next(f)
     while line != "\n":
         splitted = line.split()
 
         constel = splitted[0][0:3]
-        coord = splitted[0][3:7] # ELE ou AZI
+        coord = splitted[0][3:7]  # ELE ou AZI
 
         time = dt.time.fromisoformat(splitted[2])
         line_datetime = dt.datetime.combine(date, time)
 
-
-        data[constel][line_datetime][coord].append(
-            [_safe_to_int(v) for v in splitted[4:]]
-        )
+        data[constel][line_datetime][coord].append([_safe_to_int(v) for v in splitted[4:]])
 
         line = next(f)
 
@@ -120,9 +117,7 @@ def _extract_individual_metric(f, data, date, metric_type):
         if band not in data[constel][line_datetime][metric_type].keys():
             data[constel][line_datetime][metric_type][band] = []
 
-        data[constel][line_datetime][metric_type][band].append(
-            [_safe_to_int(v) for v in splitted[4:]]
-        )
+        data[constel][line_datetime][metric_type][band].append([_safe_to_int(v) for v in splitted[4:]])
 
 
 def extract_multipath(f, data, date):
@@ -140,24 +135,9 @@ def extract_sig2noise(f, data, date):
 
 
 _SKYPLOT_OBS_TYPE = {
-    1: {
-        "GPS": ("1C", "1*"),
-        "GLO": ("1C", "1*"),
-        "GAL": ("1X", "1*"),
-        "BDS": ("2I", "2*")
-    },
-    2: {
-        "GPS": ("2W", "2*"),
-        "GLO": ("2P", "2*"),
-        "GAL": ("7X", "7*"),
-        "BDS": ("6I", "6*")
-    },
-    5: {
-        "GPS": ("5X", "5*"),
-        "GLO": ("3X", "3*"),
-        "GAL": ("6X", "6*"),
-        "BDS": ("7I", "7*")
-    }
+    1: {"GPS": ("1C", "1*"), "GLO": ("1C", "1*"), "GAL": ("1X", "1*"), "BDS": ("2I", "2*")},
+    2: {"GPS": ("2W", "2*"), "GLO": ("2P", "2*"), "GAL": ("7X", "7*"), "BDS": ("6I", "6*")},
+    5: {"GPS": ("5X", "5*"), "GLO": ("3X", "3*"), "GAL": ("6X", "6*"), "BDS": ("7I", "7*")},
 }
 
 
@@ -200,16 +180,15 @@ def insert(cur, fetcher, station_id, skyplot_data):
         for datetime, all_data in constel_data.items():
             date = datetime.date()
             date_id = fetcher.fetch_or_create(
-                cur, date,
+                cur,
+                date,
                 "select id from skyplot_date where date = %s;",
-
                 "insert into skyplot_date (date) values (%s) returning id;",
-                (date,)
+                (date,),
             )
 
             # Pour chaque "lignes" de coordonées
             for i_line, (ele_coords, azi_coords) in enumerate(zip(all_data["ELE"], all_data["AZI"])):
-
                 # On joint les coordonées ensemble (ele, azi)
                 for i_coord, (ele, azi) in enumerate(zip(ele_coords, azi_coords)):
                     if ele is None:
@@ -221,9 +200,15 @@ def insert(cur, fetcher, station_id, skyplot_data):
                     mp2, used_mp2 = _get_skyplot_obs_type(constel, "mp", 2, i_line, i_coord, all_data)
                     mp5, used_mp5 = _get_skyplot_obs_type(constel, "mp", 5, i_line, i_coord, all_data)
 
-                    sig2noise1, used_sig2noise1 = _get_skyplot_obs_type(constel, "sig2noise", 1, i_line, i_coord, all_data)
-                    sig2noise2, used_sig2noise2 = _get_skyplot_obs_type(constel, "sig2noise", 2, i_line, i_coord, all_data)
-                    sig2noise5, used_sig2noise5 = _get_skyplot_obs_type(constel, "sig2noise", 5, i_line, i_coord, all_data)
+                    sig2noise1, used_sig2noise1 = _get_skyplot_obs_type(
+                        constel, "sig2noise", 1, i_line, i_coord, all_data
+                    )
+                    sig2noise2, used_sig2noise2 = _get_skyplot_obs_type(
+                        constel, "sig2noise", 2, i_line, i_coord, all_data
+                    )
+                    sig2noise5, used_sig2noise5 = _get_skyplot_obs_type(
+                        constel, "sig2noise", 5, i_line, i_coord, all_data
+                    )
 
                     # insertion des used_* dans la bdd si ils n'y sont pas
                     if (date_id, station_id, constellation_id) not in _already_inserted_obs_types:
@@ -243,14 +228,16 @@ def insert(cur, fetcher, station_id, skyplot_data):
                             on conflict do nothing;
                             """,
                             (
-                                date_id, station_id, constellation_id,
+                                date_id,
+                                station_id,
+                                constellation_id,
                                 fetcher.get_observation_id(cur, used_mp1),
                                 fetcher.get_observation_id(cur, used_mp2),
                                 fetcher.get_observation_id(cur, used_mp5),
                                 fetcher.get_observation_id(cur, used_sig2noise1),
                                 fetcher.get_observation_id(cur, used_sig2noise2),
                                 fetcher.get_observation_id(cur, used_sig2noise5),
-                            )
+                            ),
                         )
 
                         _already_inserted_obs_types.add((date_id, station_id, constellation_id))
@@ -263,19 +250,32 @@ def insert(cur, fetcher, station_id, skyplot_data):
                     cs5 = used_mp5 in cs_bands
 
                     # On peut enfin insèrer la rangée !
-                    row = "\t".join(map(str, (
-                            datetime, date_id, station_id, constellation_id,
-                            satellite_number, ele, azi,
-
-                            # Les mp1-5
-                            mp1, mp2, mp5,
-
-                            # Les sig2noise1-5
-                            sig2noise1, sig2noise2, sig2noise5,
-
-                            # Si ça a cycle slip
-                            cs1, cs2, cs5
-                    )))
+                    row = "\t".join(
+                        map(
+                            str,
+                            (
+                                datetime,
+                                date_id,
+                                station_id,
+                                constellation_id,
+                                satellite_number,
+                                ele,
+                                azi,
+                                # Les mp1-5
+                                mp1,
+                                mp2,
+                                mp5,
+                                # Les sig2noise1-5
+                                sig2noise1,
+                                sig2noise2,
+                                sig2noise5,
+                                # Si ça a cycle slip
+                                cs1,
+                                cs2,
+                                cs5,
+                            ),
+                        )
+                    )
 
                     to_insert.append(row)
 
@@ -300,8 +300,9 @@ def insert(cur, fetcher, station_id, skyplot_data):
                 cs1, cs2, cs5
             ) from stdin
             with null as 'None'
-            """) as copy:
-                copy.write("\n".join(to_insert))
+            """
+        ) as copy:
+            copy.write("\n".join(to_insert))
 
         cur.execute(
             """--sql
