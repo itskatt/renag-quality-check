@@ -132,9 +132,7 @@ async def async_main():
         query = dict(parse_qs(first_url.query))
 
         if "var-date" not in query:
-            print(
-                "Vous devez cliquer une fois sur une des options du menu déroulant avant de copier l'url."
-            )
+            print("Vous devez cliquer une fois sur une des options du menu déroulant avant de copier l'url.")
             print("Veuillez réessayer une fois que vous avez fait cela :")
             continue
 
@@ -179,10 +177,7 @@ async def async_main():
         async with aiohttp.ClientSession() as sess:
             print("Génération des images...")
             await tqdm_asyncio.gather(
-                *[
-                    download_image(sess, first_url, query.copy(), i, d, Path(tmp))
-                    for i, d in enumerate(all_dates)
-                ]
+                *[download_image(sess, first_url, query.copy(), i, d, Path(tmp)) for i, d in enumerate(all_dates)]
             )
 
         print()
@@ -199,9 +194,7 @@ async def async_main():
         sdtout, stderr = await proc.communicate()
 
         if proc.returncode == 0:
-            print(
-                f'Fini ! La vidéo a été sauvegardé sous le nom "{video_name}" dans votre répertoire courrant.'
-            )
+            print(f'Fini ! La vidéo a été sauvegardé sous le nom "{video_name}" dans votre répertoire courrant.')
             return
 
         # Il y a eu un soucis avec ffmpeg
@@ -212,9 +205,7 @@ async def async_main():
         print(stderr.decode().strip())
         print("\\===========================")
         print()
-        print(
-            "Il y a eu un soucis avec ffmpeg, regardez au dessus pour plus de details."
-        )
+        print("Il y a eu un soucis avec ffmpeg, regardez au dessus pour plus de details.")
 
 
 def main():

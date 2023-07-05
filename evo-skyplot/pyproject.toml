@@ -18,3 +18,8 @@ dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
 evo-skyplot = "evo_skyplot:main"
+
+[tool.black]
+line-length = 120
+target-version = ['py37']
+include = '\.pyi?$'
