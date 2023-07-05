@@ -31,12 +31,16 @@ Pour se connecter à la base de données, il y a deux moyen de spécifier les id
 - Par variables d'environement, en configurant `X2D_USER` et `X2D_PASSWORD` avec le nom d'utilisateur et le mot de passe respectivement.
 - Par arguments en ligne de commande, avec `--user` et `--password`. Les arguments en ligne de commande sont prioritaire sur les variables d'environement.
 
-### Utilisation
+## Exemples d'utilisation
 
-Une utilisation basique du script s'effectue de la manière suivante :
+Le script possède deux modes d'utilisation, l'importation des fichiers xtr et la vérification de la disponibilité des fichiers.
+
+### Lecture et importation des fichiers xtr
+
+Cette promière fonction du script s'utilise de la manière suivante :
 
 ```sh
-xtr2database <chemin/vers/repertoire> <nom du réseau>
+xtr2database import <chemin/vers/fichiers_xtr> <nom du réseau>
 ```
 
 Le script va se connecter à la base de données, lire les fichiers xtr dans le répertoire précisé et sauvegarder les données comme faisant partie du réseau donné.
@@ -46,7 +50,15 @@ Par défaut, les données vont être insérées en mode strict : avant de commen
 Il est possible d'écraser les données précédement insérées pour un réseau avec l'option `--override` :
 
 ```sh
-xtr2database <chemin/vers/repertoire> <nom du réseau> --override
+xtr2database --override import <chemin/vers/repertoire> <nom du réseau>
 ```
 
-Finalement, il est possible de décomprésser à la volée des fichiers xtr compressé avec gzip avec l'option `--gziped`.
+### Vérificaion de la disponibilité des fichiers
+
+Cette seconde fonction s'utilise de cette manière :
+
+```sh
+xtr2database file_status <chemin/vers/rinex3> <chemin/vers/xtr> <nom du réseau>
+```
+
+Le script va parcourir les deux répertoires et va enregistrer dans la base de données, pour chaque jours, la présence de fichiers Rinex 3 et xtr.
