@@ -65,6 +65,7 @@
         "type": "postgres",
         "uid": "${DS_POSTGRESQL}"
       },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -215,7 +216,7 @@
       "type": "status-history"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -250,6 +251,6 @@
   "timezone": "",
   "title": "Data integrity",
   "uid": "b0dd94a7-e766-4ae2-b824-dc889e06e0b8",
-  "version": 11,
+  "version": 12,
   "weekStart": ""
 }
