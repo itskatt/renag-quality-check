@@ -65,7 +65,7 @@
         "type": "postgres",
         "uid": "${DS_POSTGRESQL}"
       },
-      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n",
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on you screen size.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -216,7 +216,7 @@
       "type": "status-history"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -251,6 +251,6 @@
   "timezone": "",
   "title": "Data integrity",
   "uid": "b0dd94a7-e766-4ae2-b824-dc889e06e0b8",
-  "version": 12,
+  "version": 13,
   "weekStart": ""
 }
