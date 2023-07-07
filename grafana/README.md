@@ -25,3 +25,5 @@ Ce tableau de bord indique la disponibilité des fichiers de données utilisés 
 ![Tableau de bord disponibilité des fichiers](../docs/img/dashboard_data-integrity.png)
 
 La version intéractive est disponible ici (réseau RENAG) : http://gnssfr.unice.fr/quality-check/d/b0dd94a7-e766-4ae2-b824-dc889e06e0b8/data-integrity?orgId=1
+
+Note : Une version adaptée pour les réseau avec beaucoup de stations est disponible.

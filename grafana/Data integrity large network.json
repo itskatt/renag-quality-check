@@ -1,0 +1,1642 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_POSTGRESQL",
+      "label": "PostgreSQL",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "postgres",
+      "pluginName": "PostgreSQL"
+    },
+    {
+      "name": "VAR_NETWORK",
+      "type": "constant",
+      "label": "network",
+      "value": "CENTIPEDE",
+      "description": ""
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.5.2"
+    },
+    {
+      "type": "datasource",
+      "id": "postgres",
+      "name": "PostgreSQL",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "status-history",
+      "name": "Status history",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 6,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 50\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 7,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 100\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 84
+      },
+      "id": 8,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 150\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 112
+      },
+      "id": 9,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 200\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 140
+      },
+      "id": 10,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 250\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 168
+      },
+      "id": 11,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 300\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 196
+      },
+      "id": 12,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 350\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 24,
+        "x": 0,
+        "y": 224
+      },
+      "id": 13,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 400\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "description": "## File availability indicator\n\nThe presence of an XTR file means that visualisations are available for this day.\n\nXTR files depend on Rinex3 (RNX3) files to be produced.\n\nYou may need to change the [dashboard's time range](https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/#common-time-range-controls) to be able to visualise data proprely depending on your screen size.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "RNX3❌ XTR❌"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "RNX3❌ XTR✅"
+                },
+                "2": {
+                  "index": 2,
+                  "text": "RNX3✅ XTR❌"
+                },
+                "3": {
+                  "index": 3,
+                  "text": "RNX3✅ XTR✅"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "RNX3❌ XTR❌",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 24,
+        "x": 0,
+        "y": 252
+      },
+      "id": 14,
+      "options": {
+        "colWidth": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "${DS_POSTGRESQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select\r\n  s.fullname as \"station_fullname\",\r\n  fs.date as \"time\",\r\n  case\r\n    when not has_rinex3\r\n    and not has_xtr then 0\r\n    when not has_rinex3\r\n    and has_xtr then 1\r\n    when has_rinex3\r\n    and not has_xtr then 2\r\n    when has_rinex3\r\n    and has_xtr then 3\r\n  end as \"status_code\"\r\nfrom\r\n  file_status fs\r\n  inner join station s on s.id = fs.station_id\r\nwhere\r\n  $__timeFilter(date)\r\n  and s.id in (\r\n    select\r\n      s.id\r\n    from\r\n      station s\r\n      inner join network n on n.id = s.network_id\r\n    where\r\n      n.name = '$network'\r\n    limit\r\n      50 offset 450\r\n)\r\norder by\r\n  s.fullname;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "File availability status",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "station_fullname",
+            "rowField": "time",
+            "valueField": "status_code"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "station_fullname": "",
+              "time\\device_name": "time",
+              "time\\station_fullname": "time"
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "status-history"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "hide": 2,
+        "name": "network",
+        "query": "${VAR_NETWORK}",
+        "skipUrlSync": false,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_NETWORK}",
+          "text": "${VAR_NETWORK}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_NETWORK}",
+            "text": "${VAR_NETWORK}",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Data integrity",
+  "uid": "b0dd94a7-e7rgrgrgrgefze",
+  "version": 19,
+  "weekStart": ""
+}
