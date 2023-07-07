@@ -131,7 +131,7 @@ async def async_main():
         first_url = urlparse(raw_url)
         query = dict(parse_qs(first_url.query))
 
-        if "var-date" not in query:
+        if "var-day" not in query:
             print("Vous devez cliquer une fois sur une des options du menu déroulant avant de copier l'url.")
             print("Veuillez réessayer une fois que vous avez fait cela :")
             continue
