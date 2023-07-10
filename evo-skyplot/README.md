@@ -20,6 +20,8 @@ Si vous êtes sur Windows, il est conseillé d'utiliser [Scoop](https://scoop.sh
 scoop install main/ffmpeg
 ```
 
+Attention, Anaconda peut causer des problèmes. Si cela vous arrive, utilisez la [version officielle de Python](https://www.python.org/downloads/).
+
 Le script s'installe de la manière suivante :
 
 ```sh
@@ -39,7 +41,19 @@ python -m evo-skyplot
 
 Suivez ensuite les instructions affichées.
 
+Un tutoriel est disponible sur [Youtube](https://www.youtube.com/watch?v=w2eVqw7kh-U).
+
 > **Notes**
 > 
 > - L'URL de la première image correspond au lien du rendu disponible dans le panneau de partage. Faites un clic droit sur le bouton puis copiez l'URL.
 > - Avant de copier le lien, vous devez cliquer au moins une fois sur une option du menu déroulant. Le script vous avertira si vous n'avez pas fait ça.
+
+## FAQ
+
+**Q :** J'ai installé le script en copiant-collant la commande `pip install...` dans le terminal et ça marche pas. Qu'est-ce que je dois faire ?
+
+**A :** Installez le script sur la version de Python que vous utilisez. Par exemple pour l'installer sur la version de Python qui est disponible en tant que `python` ajoutez `python -m` devant : ` pip install ...`. Vous lancerez ensuite le script avec `python -m evo-skyplot`.
+
+**Q :** Après avoir donné l'url et la date j'ai une erreur incompréhensible. Qu'est-ce que je dois faire ?
+
+**A :** N'utilisez pas Anaconda.
