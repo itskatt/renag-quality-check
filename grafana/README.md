@@ -1,6 +1,6 @@
 # Fichiers d'importations des tableau de bord Grafana TODO
 
-Ce répertoire contient les fichiers nécessaires pour importer les trois tableaux de bords Grafana qui permettent la visualisation de données. Voir [ici](../docs/#ajout-dun-nouveau-réseau) pour des instructions sur comment les importer.
+Ce répertoire contient les fichiers nécessaires pour importer les trois tableaux de bords Grafana qui permettent la visualisation de données. Voir [ici](../docs/README.md#ajout-dun-nouveau-réseau) pour des instructions sur comment les importer.
 
 ## Séries temporelles (Quality check)
 
