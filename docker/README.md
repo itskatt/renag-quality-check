@@ -26,7 +26,7 @@ Avant d'importer les tableau de bord, vous devez créer une connection à la bas
 
 Rentrez ensuite les informations suivantes (avec la configuration par défault) :
 
-- **Host :** `host.docker.internal:5432`
+- **Host :** `database:5432`
 - **Database :** `quality_check_data`
 - **User :** `grafana_reader`
 - **Password :** `grafana`
