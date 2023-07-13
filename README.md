@@ -1,5 +1,7 @@
 # RENAG quality check
 
+> **NOTE :** Ce dépot est un miroir de l'original disponible à cette adresse : https://gitlab.oca.eu/AstroGeoGPM/renag-qc
+
 Ce dépôt contient les sources du tableau de bord interactif présentant les données de qualité du réseau RENAG.
 
 Il a été réalisé par [Raphaël Caldwell](raphael.caldwell@etu.univ-cotedazur.fr) dans le cadre de son stage de deuxième année de BUT Informatique.
